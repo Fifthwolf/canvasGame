@@ -5,7 +5,7 @@ var data = {
   score: 0,
   system: {
     dataRefreshRate: 20, //数据刷新率
-    screenRefreshRate: 50, //屏幕刷新率
+    screenRefreshRate: 40, //屏幕刷新率
     start: false,
     fail: false,
     width: 400,
@@ -70,6 +70,8 @@ function imageLoaded () {
     var cxt = canvas.getContext('2d');
     data.image = image;
     showWelcomeInterface();
+    showTitle(true);
+    showBottomStripe(true, true, 1.5);
     showMask(false, 600);
     drawImage(cxt);
   }
@@ -86,9 +88,36 @@ function showWelcomeInterface () {
 }
 
 /*
+ 显示标题
+ *
+ * @show {Boolean} true显示标题，false隐藏标题
+ *
+ */
+function showTitle (show) {
+  data.element.title.show = show ? true : false;
+}
+
+/*
+ 显示底部滚动条纹
+ *
+ * @show {Boolean} true显示标题，false隐藏标题
+ *
+ * @move {Boolean} true进行滚动，false停止滚动
+ *
+ * @deviation {Number} 每个周期偏移距离，应可以被24除尽
+ *
+ */
+function showBottomStripe (show, move, deviation) {
+  data.element.bottomStripe.show = show ? true : false;
+  data.TIME.bottomStripe = setInterval(function () {
+    data.element.bottomStripe.deviation = (data.element.bottomStripe.deviation + deviation) % 24;
+  }, data.system.dataRefreshRate);
+}
+
+/*
  显示黑幕
  *
- * @show {Boolean} true为生成黑色蒙版，false为黑色蒙版再消失
+ * @show {Boolean} true生成黑色蒙版，false黑色蒙版再消失
  *
  * @time {Number} 蒙版持续时间，单位ms
  *
@@ -145,15 +174,15 @@ function drawBackground (cxt) {
 }
 
 function drawBottomStripe (cxt) {
-  //cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
+  cxt.drawImage(data.image, 584 + data.element.bottomStripe.deviation, 0, 336, 22, 0, 569, 465, 31);
 }
 
 function drawTitle (cxt) {
-  //cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
+  cxt.drawImage(data.image, 702, 182, 178, 48, 76, 118, 247, 67);
 }
 
 function drawStartButton (cxt) {
-  //cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
+  cxt.drawImage(data.image, 708, 236, 104, 58, 128, 400, 144, 81);
 }
 
 function drawScore  (cxt) {
