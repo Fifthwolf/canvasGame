@@ -16,64 +16,53 @@ var data = {
       velocityY: 0,
       left: 120,
       top: 315,
+      draw: drawBird
     },
     background: {
       show: true,
       type: 0, //0白天，1黑夜
-      draw: null
+      draw: drawBackground
     },
     bottomStripe: {
       show: true,
       move: true,
       deviation: 0,
-      draw: null
+      draw: drawBottomStripe
     },
     title: {
       show: true,
       type: 0, //0 flappyBird, 1 Get Ready, 2 Game Over
-      draw: null
+      draw: drawTitle
     },
     startButton: {
       show: true,
-      draw: null
+      draw: drawStartButton
     },
     score: {
       show: false,
       value: 0,
-      draw: null
+      draw: drawScore
     },
     rankings: {
       show: false,
-      draw: null
+      draw: drawRankings
     },
     mask: {
       show: false,
       alpha: 0,
-      draw: null
+      draw: drawMask
     }
   },
   TIME: {}
 }
 
 window.onload = function () {
-  drawDataCorresponding();
   imageLoaded();
-}
-
-function drawDataCorresponding () {
-  data.element.bird.draw = drawBird;
-  data.element.background.draw = drawBackground;
-  data.element.bottomStripe.draw = drawBottomStripe;
-  data.element.title.draw = drawTitle;
-  data.element.startButton.draw = drawStartButton;
-  data.element.score.draw = drawScore;
-  data.element.rankings.draw = drawRankings;
-  data.element.mask.draw = drawMask;
 }
 
 function imageLoaded () {
   var image = new Image();
-  image.src = 'flyBird.png';
+  image.src = 'flappyBird.png';
   image.onload = function () {
     data.image = image;
     drawImage();
@@ -81,44 +70,51 @@ function imageLoaded () {
 }
 
 function drawImage () {
-  var context = canvas.getContext('2d');
   data.TIME.drawImage = setInterval(function () {
     for(var i in data.element){
       if (data.element[i].show === true) {
-        data.element[i].draw(context);
+        data.element[i].draw(canvas);
       }
     }
   }, data.system.screenRefreshRate);
 }
 
 function drawBird (cxt) {
+  var cxt = canvas.getContext('2d');
   cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
 }
 
 function drawBackground (cxt) {
+  var cxt = canvas.getContext('2d');
   cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
 }
 
 function drawBottomStripe (cxt) {
+  var cxt = canvas.getContext('2d');
   cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
 }
 
 function drawTitle (cxt) {
+  var cxt = canvas.getContext('2d');
   cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
 }
 
 function drawStartButton (cxt) {
+  var cxt = canvas.getContext('2d');
   cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
 }
 
 function drawScore  (cxt) {
+  var cxt = canvas.getContext('2d');
   cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
 }
 
 function drawRankings (cxt) {
+  var cxt = canvas.getContext('2d');
   cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
 }
 
 function drawMask (cxt) {
-  cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
+  var cxt = canvas.getContext('2d');
+  cxt.drawImage(data.image, 0, 0, canvas.width, canvas.height, 0, -55, 400, 711);
 }
