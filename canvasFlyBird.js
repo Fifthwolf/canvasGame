@@ -15,6 +15,7 @@ var data = {
     bird: {
       show: true,
       color: 0, //0黄色，1蓝色，2红色
+      attitude: 0, //姿态，0～2
       velocityY: 0,
       left: 120,
       top: 315,
@@ -37,7 +38,7 @@ var data = {
       draw: drawTitle
     },
     startButton: {
-      show: true,
+      show: false,
       draw: drawStartButton
     },
     score: {
@@ -59,6 +60,7 @@ var data = {
 }
 
 window.onload = function () {
+  randomData();
   imageLoaded();
 }
 
@@ -69,11 +71,15 @@ function imageLoaded () {
     _setCanvasProperty();
     var cxt = canvas.getContext('2d');
     data.image = image;
+    birdAnimate();
     showWelcomeInterface();
     showTitle(true);
+    startButton(true);
     showBottomStripe(true, true, 1.5);
     showMask(false, 600);
     drawImage(cxt);
+    addEvent(canvas, 'mousemove', cursorMoveEvent);
+    addEvent(canvas, 'click', cursorClickEvent);
   }
 
   function _setCanvasProperty () {
@@ -82,8 +88,50 @@ function imageLoaded () {
   }
 }
 
+function randomData () {
+  data.element.bird.color = parseInt(Math.random() * 1000) % 3;
+  data.element.background.type = parseInt(Math.random() * 1000) % 2;
+}
+
+function cursorClickEvent (e) {
+  var e = e || window.e;
+  if (cursorInStart(e)) {
+    removeEvent(canvas, 'mousemove', cursorMoveEvent);
+    this.style.cursor = 'default';
+  }
+}
+
+function cursorMoveEvent (e) {
+  var e = e || window.e;
+  if (cursorInStart(e)) {
+    this.style.cursor = 'pointer';
+  } else {
+    this.style.cursor = 'default';
+  }
+}
+
+function cursorInStart (e) {
+  if (_getMousePos(e).x > 128 && _getMousePos(e).x < 272
+    && _getMousePos(e).y > 400 && _getMousePos(e).y < 481) {
+    return true;
+  } else {
+    return false;
+  }
+
+  function _getMousePos (e) {
+    var x = e.clientX - e.target.getBoundingClientRect().left;
+    var y = e.clientY - e.target.getBoundingClientRect().top;
+    return {'x': x, 'y': y};
+  }
+}
+
+function birdAnimate () {
+  data.TIME.birdAnimate = setInterval(function () {
+    data.element.bird.attitude = (data.element.bird.attitude + 1) % 3;
+  }, data.system.dataRefreshRate * 9);
+}
+
 function showWelcomeInterface () {
-  data.element.background.type = 0;
   data.element.bird.left = 200;
 }
 
@@ -95,6 +143,16 @@ function showWelcomeInterface () {
  */
 function showTitle (show) {
   data.element.title.show = show ? true : false;
+}
+
+/*
+ 显示开始按钮标题
+ *
+ * @show {Boolean} true显示开始按钮，false隐藏开始按钮
+ *
+ */
+function startButton (show) {
+  data.element.startButton.show = show ? true : false;
 }
 
 /*
@@ -166,11 +224,35 @@ function drawImage (cxt) {
 }
 
 function drawBird (cxt) {
-  //cxt.drawImage(data.image, 0, 0, 288, 512, 0, 0, 400, 600);
+  var birdPosition = [ //34, 24
+    [
+      [6, 982],
+      [62, 982],
+      [118, 982]
+    ],
+    [
+      [174, 982],
+      [230, 658],
+      [230, 710]
+    ],
+    [
+      [230, 762],
+      [230, 814],
+      [230, 866]
+    ]
+  ];
+  cxt.drawImage(data.image,
+    birdPosition[data.element.bird.color][data.element.bird.attitude][0],
+    birdPosition[data.element.bird.color][data.element.bird.attitude][1],
+    34, 24, data.element.bird.left - 24, data.element.bird.top - 17, 48, 34);
 }
 
 function drawBackground (cxt) {
-  cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
+  if (data.element.background.type === 0) {
+    cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
+  } else {
+    cxt.drawImage(data.image, 292, 0, 288, 512, 0, -55, 400, 711);
+  }
 }
 
 function drawBottomStripe (cxt) {
@@ -197,4 +279,24 @@ function drawMask (cxt) {
   cxt.beginPath();
   cxt.fillStyle = 'rgba(0, 0, 0, ' + data.element.mask.alpha + ')';
   cxt.fillRect(0, 0, data.system.width, data.system.height);
+}
+
+function addEvent (element, type, handler) {
+  if (element.addEventListener) {
+    element.addEventListener(type, handler, false);
+  } else if (element.attachEvent) {  
+    element.attachEvent('on' + type, handler);
+  } else {  
+    element['on' + type] = handler;
+  }  
+}
+
+function removeEvent (element, type, handler) {
+  if (element.removeEventListener) {
+    element.removeEventListener(type, handler, false);
+  } else if (element.detachEvent) {
+    element.detachEvent('on' + type, handler); 
+  } else {
+    element['on' + type] = null;
+  }
 }
