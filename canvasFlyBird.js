@@ -5,7 +5,7 @@ var data = {
   score: 0,
   system: {
     dataRefreshRate: 20, //数据刷新率
-    screenRefreshRate: 40, //屏幕刷新率
+    screenRefreshRate: 20, //屏幕刷新率
     start: false,
     fail: false,
     width: 400,
@@ -17,8 +17,10 @@ var data = {
       color: 0, //0黄色，1蓝色，2红色
       attitude: 0, //姿态，0～2
       velocityY: 0,
+      speedY: 0,
       left: 120,
       top: 315,
+      gravity: 0,
       draw: drawBird
     },
     background: {
@@ -36,6 +38,10 @@ var data = {
       show: true,
       type: 0, //0 flappyBird, 1 Get Ready, 2 Game Over
       draw: drawTitle
+    },
+    tip: {
+      show: false,
+      draw: drawTip
     },
     startButton: {
       show: false,
@@ -74,7 +80,7 @@ function imageLoaded () {
     birdAnimate();
     showWelcomeInterface();
     showTitle(true);
-    startButton(true);
+    showStartButton(true);
     showBottomStripe(true, true, 1.5);
     showMask(false, 600);
     drawImage(cxt);
@@ -95,9 +101,18 @@ function randomData () {
 
 function cursorClickEvent (e) {
   var e = e || window.e;
-  if (cursorInStart(e)) {
-    removeEvent(canvas, 'mousemove', cursorMoveEvent);
-    this.style.cursor = 'default';
+  if (data.system.start === false) {
+    if (cursorInStart(e)) {
+      removeEvent(canvas, 'mousemove', cursorMoveEvent);
+      this.style.cursor = 'default';
+      showMask(true, data.system.dataRefreshRate * 10);
+      setTimeout(function () {
+        getReady();
+      }, data.system.dataRefreshRate * 10);
+    }
+  } else {
+    
+    data.element.bird.speedY = -8;
   }
 }
 
@@ -125,10 +140,37 @@ function cursorInStart (e) {
   }
 }
 
+function gamePlaying () {
+  if (data.system.start === false) {
+    showTip(false);
+    data.element.bird.gravity = 0.4;
+    //createObstacle();
+  }
+  data.system.start  = true;
+  data.element.bird.speedY = -8;
+  //createScore(data.score);
+}
+
 function birdAnimate () {
   data.TIME.birdAnimate = setInterval(function () {
     data.element.bird.attitude = (data.element.bird.attitude + 1) % 3;
   }, data.system.dataRefreshRate * 9);
+}
+
+function getReady () {
+  randomData();
+  showMask(false, data.system.dataRefreshRate * 4);
+  removeEvent(canvas, 'click', cursorClickEvent);
+  addEvent(canvas, 'click', gamePlaying);
+  showScore(true);
+  showTitle(false);
+  showTip(true);
+  showStartButton(false);
+  data.element.bird.left = 120;
+  data.TIME.dataUpdate = setInterval(function () {
+    data.element.bird.speedY = data.element.bird.speedY + data.element.bird.gravity;
+    data.element.bird.top = data.element.bird.top + data.element.bird.speedY;
+  }, data.system.dataRefreshRate);
 }
 
 function showWelcomeInterface () {
@@ -146,14 +188,35 @@ function showTitle (show) {
 }
 
 /*
+ 显示操作提示
+ *
+ * @show {Boolean} true显示操作提示，false隐藏操作提示
+ *
+ */
+function showTip (show) {
+  data.element.tip.show = show ? true : false;
+}
+
+/*
  显示开始按钮标题
  *
  * @show {Boolean} true显示开始按钮，false隐藏开始按钮
  *
  */
-function startButton (show) {
+function showStartButton (show) {
   data.element.startButton.show = show ? true : false;
 }
+
+/*
+ 显示分数
+ *
+ * @show {Boolean} true显示分数，false隐藏分数
+ *
+ */
+function showScore (show) {
+  data.element.score.show = show ? true : false;
+}
+
 
 /*
  显示底部滚动条纹
@@ -193,19 +256,22 @@ function showMask (show, time) {
 
   function _addMask () {
     setTimeout(function () {
-      data.element.mask.alpha = Math.min(1, data.element.mask.alpha + 1 / frequency);
+      data.element.mask.alpha = data.element.mask.alpha + 1 / frequency;
       if (data.element.mask.alpha < 1) {
         _addMask();
+      } else {
+        data.element.mask.alpha = 1
       }
     }, data.system.dataRefreshRate);
   }
 
   function _reduceMask () {
-    data.element.mask.alpha = Math.max(0, data.element.mask.alpha - 1 / frequency);
+    data.element.mask.alpha = data.element.mask.alpha - 1 / frequency;
     setTimeout(function () {
       if (data.element.mask.alpha > 0) {
         _reduceMask();
       } else {
+        data.element.mask.alpha = 0;
         data.element.mask.show = false;
       }
     }, data.system.dataRefreshRate);
@@ -213,7 +279,7 @@ function showMask (show, time) {
 }
 
 function drawImage (cxt) {
-  var drawOrder = ['background', 'bottomStripe', 'title', 'startButton', 'score', 'rankings', 'bird', 'mask'];
+  var drawOrder = ['background', 'bottomStripe', 'title', 'tip', 'startButton', 'score', 'rankings', 'bird', 'mask'];
   data.TIME.drawImage = setInterval(function () {
     for(var i = 0, len = drawOrder.length; i < len; i++){
       if (data.element[drawOrder[i]].show === true) {
@@ -263,12 +329,44 @@ function drawTitle (cxt) {
   cxt.drawImage(data.image, 702, 182, 178, 48, 76, 118, 247, 67);
 }
 
+function drawTip (cxt) {
+  cxt.drawImage(data.image, 590, 118, 184, 50, 75, 190, 256, 69);
+  cxt.drawImage(data.image, 584, 182, 114, 98, 120, 295, 158, 136);
+}
+
 function drawStartButton (cxt) {
   cxt.drawImage(data.image, 708, 236, 104, 58, 128, 400, 144, 81);
 }
 
 function drawScore  (cxt) {
-  //cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
+  var scoreData = [
+    [992, 120], //0
+    [268, 910], //1
+    [584, 320], //2
+    [612, 320], //3
+    [640, 320], //4
+    [668, 320], //5
+    [584, 368], //6
+    [612, 368], //7
+    [640, 368], //8
+    [668, 368]  //9
+  ];
+  var single, ten, hundreds;
+  if (data.score < 10) {
+    cxt.drawImage(data.image, scoreData[data.score][0], scoreData[data.score][1], 24, 36, 182, 98, 33, 50);
+  } else if (data.score < 100) {
+    single = data.score % 10;
+    ten = parseInt(score / 10);
+    cxt.drawImage(data.image, scoreData[single][0], scoreData[single][1], 24, 36, 199, 98, 33, 50);
+    cxt.drawImage(data.image, scoreData[ten][0], scoreData[ten][1], 24, 36, 165, 98, 33, 50);
+  } else {
+    single = score % 10;
+    ten = parseInt((data.score / 10) % 10);
+    hundreds = parseInt(data.score / 100);
+    cxt.drawImage(data.image, scoreData[single][0], scoreData[single][1], 24, 36, 216, 98, 33, 50);
+    cxt.drawImage(data.image, scoreData[ten][0], scoreData[ten][1], 24, 36, 182, 98, 33, 50);
+    cxt.drawImage(data.image, scoreData[hundreds][0], scoreData[hundreds][1], 24, 36, 148, 98, 33, 50);
+  }
 }
 
 function drawRankings (cxt) {
