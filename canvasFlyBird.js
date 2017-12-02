@@ -9,6 +9,8 @@ var data = {
     screenRefreshRate: 20, //屏幕刷新率
     start: false,
     fail: false,
+    scale: 1,
+    top: 0,
     width: 400,
     height: 600
   },
@@ -79,6 +81,15 @@ var data = {
 }
 
 window.onload = function () {
+  var width = document.documentElement.clientWidth;
+  var height = document.documentElement.clientHeight;
+  if (height / width > 1.5) {
+    data.system.scale = width / 400 - 0.1;
+  } else {
+    data.system.scale = height / 600 - 0.1;
+  }
+  data.system.top = (height - 600) / data.system.scale / 2;
+  canvas.style.transform = 'scale(' + data.system.scale + ', ' + data.system.scale + ') translateY(' + data.system.top + 'px)';
   randomData();
   imageLoaded();
 }
@@ -154,8 +165,8 @@ function cursorMoveEvent (e) {
 }
 
 function cursorInStart (e) {
-  if (_getMousePos(e).x > 128 && _getMousePos(e).x < 272
-    && _getMousePos(e).y > 400 && _getMousePos(e).y < 481) {
+  if (_getMousePos(e).x > 128 * data.system.scale && _getMousePos(e).x < 272 * data.system.scale
+    && _getMousePos(e).y > 400 * data.system.scale&& _getMousePos(e).y < 481 * data.system.scale) {
     return true;
   } else {
     return false;
@@ -464,10 +475,15 @@ function drawBird (cxt) {
       [230, 866]
     ]
   ];
+
+  cxt.save();
+  cxt.translate(data.element.bird.left, data.element.bird.top);
+  cxt.rotate(Math.atan(data.element.bird.speedY / 10));
   cxt.drawImage(data.image,
     birdPosition[data.element.bird.color][data.element.bird.attitude][0],
     birdPosition[data.element.bird.color][data.element.bird.attitude][1],
-    34, 24, data.element.bird.left - 24, data.element.bird.top - 17, 48, 34);
+    34, 24, -24, -17, 48, 34);
+  cxt.restore();
 }
 
 function drawBackground (cxt) {
