@@ -110,6 +110,7 @@ function imageLoaded () {
 }
 
 function randomData () {
+  data.score = 0;
   data.element.bird.color = parseInt(Math.random() * 1000) % 3;
   data.element.background.type = parseInt(Math.random() * 1000) % 2;
   data.element.bird.top = 315;
@@ -118,9 +119,10 @@ function randomData () {
   data.element.bird.gravity = 0;
   data.element.obstacle.previousAdopt = 56;
   data.element.obstacle.body = [];
-  if (data.element.bird.animate === false) {
+  data.element.rankings.top = 600;
+  if (data.system.fail === true) {
     birdAnimate(true);
-    data.element.bird.animate = true;
+    controlBottomStripe(true, 2);
   }
   showElement('startButton', false);
   showElement('rankings', false);
@@ -182,7 +184,7 @@ function gamePlaying () {
     createObstacle();
   }
   data.system.start  = true;
-  data.element.bird.speedY = -8;
+  data.element.bird.speedY = -7;
 }
 
 function birdAnimate (animate) {
@@ -221,6 +223,7 @@ function dataUpdata (update) {
 }
 
 function createObstacle () {
+  var scoreFlag = true
   data.TIME.obstacle = setInterval(function () {
     data.element.obstacle.previousAdopt = data.element.obstacle.previousAdopt + 1;
     for (var i = 0, len = data.element.obstacle.body.length; i < len; i++) {
@@ -236,16 +239,13 @@ function createObstacle () {
       if (data.element.obstacle.body[0][0] < -72) {
         data.element.obstacle.body.shift();
       }
-      /*
       if (data.element.obstacle.body[0][0] < 0) {
         scoreFlag = true;
       }
-      
       if (scoreFlag === true && data.element.obstacle.body[i][0] < 84 && data.element.obstacle.body[i][0] > 0) {
         scoreFlag = false;
         data.score++;
-        createScore(data.score);
-      }*/
+      }
     }
     if (!collisionJudge()) {
       gameover();
@@ -319,7 +319,7 @@ function restart () {
   function _createGameover () {
     showElement('score', false);
     data.element.title.type = 2;
-    data.element.title.top = 138;
+    data.element.title.top = 100;
     showElement('title', true);
 
     _gameover1();
@@ -327,7 +327,7 @@ function restart () {
     function _gameover1 () {
       data.element.title.top--;
       setTimeout(function () {
-        if (data.element.title.top < 130) {
+        if (data.element.title.top < 92) {
           _gameover2();
         } else {
           _gameover1();
@@ -338,7 +338,7 @@ function restart () {
     function _gameover2 () {
       data.element.title.top++;
       setTimeout(function () {
-        if (data.element.title.top < 138) {
+        if (data.element.title.top < 100) {
           _gameover2();
         }
       }, data.system.dataRefreshRate);
@@ -356,6 +356,7 @@ function restart () {
           addEvent(canvas, 'mousemove', cursorMoveEvent);
           addEvent(canvas, 'click', cursorClickEvent);
           data.system.start = false;
+          data.system.fail = true;
         }, data.system.dataRefreshRate * 10);
       }
     }, data.system.dataRefreshRate);
@@ -526,11 +527,11 @@ function drawScore  (cxt) {
     cxt.drawImage(data.image, scoreData[data.score][0], scoreData[data.score][1], 24, 36, 182, 98, 33, 50);
   } else if (data.score < 100) {
     single = data.score % 10;
-    ten = parseInt(score / 10);
+    ten = parseInt(data.score / 10);
     cxt.drawImage(data.image, scoreData[single][0], scoreData[single][1], 24, 36, 199, 98, 33, 50);
     cxt.drawImage(data.image, scoreData[ten][0], scoreData[ten][1], 24, 36, 165, 98, 33, 50);
   } else {
-    single = score % 10;
+    single = data.score % 10;
     ten = parseInt((data.score / 10) % 10);
     hundreds = parseInt(data.score / 100);
     cxt.drawImage(data.image, scoreData[single][0], scoreData[single][1], 24, 36, 216, 98, 33, 50);
