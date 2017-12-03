@@ -19,7 +19,6 @@ var data = {
       show: true,
       color: 0, //0黄色，1蓝色，2红色
       attitude: 0, //姿态，0～2
-      velocityY: 0,
       speedY: 0,
       left: 120,
       top: 315,
@@ -43,7 +42,6 @@ var data = {
       previousAdopt: 56,
       adopt: 140,
       width: 72,
-      transverseSpacing: 225,
       body: [],
       draw: drawObstacle
     },
@@ -90,7 +88,7 @@ window.onload = function () {
   }
   data.system.top = (height - 600) / data.system.scale / 2;
   canvas.style.transform = 'scale(' + data.system.scale + ', ' + data.system.scale + ') translateY(' + data.system.top + 'px)';
-  randomData();
+  resetData();
   imageLoaded();
 }
 
@@ -120,13 +118,12 @@ function imageLoaded () {
   }
 }
 
-function randomData () {
+function resetData () {
   data.score = 0;
   data.element.bird.color = parseInt(Math.random() * 1000) % 3;
   data.element.background.type = parseInt(Math.random() * 1000) % 2;
   data.element.bird.top = 315;
   data.element.bird.speedY = 0;
-  data.element.bird.left = 120;
   data.element.bird.gravity = 0;
   data.element.obstacle.previousAdopt = 56;
   data.element.obstacle.body = [];
@@ -210,7 +207,7 @@ function birdAnimate (animate) {
 
 function getReady () {
   data.element.title.type = 1;
-  randomData();
+  resetData();
   showMask(false, data.system.screenRefreshRate * 6);
   removeEvent(canvas, 'click', cursorClickEvent);
   addEvent(canvas, 'click', gamePlaying);
@@ -227,6 +224,9 @@ function dataUpdata (update) {
     data.TIME.dataUpdate = setInterval(function () {
       data.element.bird.speedY = data.element.bird.speedY + data.element.bird.gravity;
       data.element.bird.top = data.element.bird.top + data.element.bird.speedY;
+      if (!collisionJudge()) {
+        gameover();
+      }
     }, data.system.dataRefreshRate);
   } else {
     clearInterval(data.TIME.dataUpdate);
@@ -257,9 +257,6 @@ function createObstacle () {
         scoreFlag = false;
         data.score++;
       }
-    }
-    if (!collisionJudge()) {
-      gameover();
     }
   }, data.dataRefreshRate);
 }
