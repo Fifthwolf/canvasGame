@@ -1,10 +1,12 @@
 #loading {
   position: absolute;
-  width: 200px;
-  margin-left: -100px;
+  z-index: 10;
+  width: 300px;
+  margin-left: -150px;
   left: 50%;
   top: 40%;
-  font-size: 48px; }
+  font-size: 36px;
+  font-family: 'Microsoft YaHei'; }
 
 #canvas {
   display: block;
