@@ -1,4 +1,12 @@
-canvas {
+#loading {
+  position: absolute;
+  width: 200px;
+  margin-left: -100px;
+  left: 50%;
+  top: 40%;
+  font-size: 48px; }
+
+#canvas {
   display: block;
   width: 400px;
   height: 600px;

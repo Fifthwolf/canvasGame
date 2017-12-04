@@ -1,3 +1,4 @@
+var loading = document.getElementById('loading');
 var canvas = document.getElementById('canvas');
 
 var data = {
@@ -96,6 +97,7 @@ function imageLoaded () {
   var image = new Image();
   image.src = 'flappyBird.png';
   image.onload = function () {
+    loading.style.display = 'none';
     _setCanvasProperty();
     var cxt = canvas.getContext('2d');
     data.image = image;
