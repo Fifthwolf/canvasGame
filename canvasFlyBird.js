@@ -80,6 +80,12 @@ var data = {
 }
 
 window.onload = function () {
+  suitScreen();
+  resetData();
+  imageLoaded();
+}
+
+function suitScreen () {
   var width = document.documentElement.clientWidth;
   var height = document.documentElement.clientHeight;
   if (height / width > 1.5) {
@@ -89,8 +95,6 @@ window.onload = function () {
   }
   data.system.top = (height - 600) / data.system.scale / 2;
   canvas.style.transform = 'scale(' + data.system.scale + ', ' + data.system.scale + ') translateY(' + data.system.top + 'px)';
-  resetData();
-  imageLoaded();
 }
 
 function imageLoaded () {
@@ -557,8 +561,27 @@ function drawScore  (cxt) {
 
 function drawRankings (cxt) {
   cxt.drawImage(data.image, 6, 518, 226, 114, 43, data.element.rankings.top, 314, 158);
-  _drawScore (data.score, data.element.rankings.top, false);
-  _drawScore (data.bestScore, data.element.rankings.top, true);
+  _drawMedal(data.score, data.bestScore, data.element.rankings.top);
+  _drawScore(data.score, data.element.rankings.top, false);
+  _drawScore(data.bestScore, data.element.rankings.top, true);
+
+  function _drawMedal (score, bestScore, scoreboardTop) {
+    var medalData = [ //44, 44
+      [242, 564], //gold
+      [224, 906], //silver
+      [224, 954] //copper
+    ];
+    var ranking, socreTop = 60 + data.element.rankings.top;
+    if (score >= bestScore) {
+      ranking = 0;
+    } else if (score > bestScore / 2) {
+      ranking = 1;
+    } else {
+      ranking = 2;
+    }
+
+    cxt.drawImage(data.image, medalData[ranking][0], medalData[ranking][1], 44, 44, 78, socreTop, 62, 62);
+  }
 
   function _drawScore (score, scoreboardTop, isBest) {
     var scoreData = [ //14, 20
@@ -577,9 +600,9 @@ function drawRankings (cxt) {
     var single, ten, hundreds, socreTop;
 
     if (isBest) {
-      socreTop = 104 + data.element.rankings.top;
+      socreTop = 104 + scoreboardTop;
     } else {
-      socreTop = 48 + data.element.rankings.top;
+      socreTop = 48 + scoreboardTop;
     }
 
     if (score < 10) {
