@@ -571,7 +571,7 @@ function drawRankings (cxt) {
       [224, 906], //silver
       [224, 954] //copper
     ];
-    var ranking, socreTop = 60 + data.element.rankings.top;
+    var ranking, scoreTop = 60 + data.element.rankings.top;
     if (score >= bestScore) {
       ranking = 0;
     } else if (score > bestScore / 2) {
@@ -580,7 +580,7 @@ function drawRankings (cxt) {
       ranking = 2;
     }
 
-    cxt.drawImage(data.image, medalData[ranking][0], medalData[ranking][1], 44, 44, 78, socreTop, 62, 62);
+    cxt.drawImage(data.image, medalData[ranking][0], medalData[ranking][1], 44, 44, 78, scoreTop, 62, 62);
   }
 
   function _drawScore (score, scoreboardTop, isBest) {
@@ -597,28 +597,28 @@ function drawRankings (cxt) {
       [622, 412]  //9
     ];
 
-    var single, ten, hundreds, socreTop;
+    var single, ten, hundreds, scoreTop;
 
     if (isBest) {
-      socreTop = 104 + scoreboardTop;
+      scoreTop = 104 + scoreboardTop;
     } else {
-      socreTop = 48 + scoreboardTop;
+      scoreTop = 48 + scoreboardTop;
     }
 
     if (score < 10) {
-      cxt.drawImage(data.image, scoreData[score][0], scoreData[score][1], 14, 20, 300, socreTop, 20, 28);
+      cxt.drawImage(data.image, scoreData[score][0], scoreData[score][1], 14, 20, 300, scoreTop, 20, 28);
     } else if (score < 100) {
       single = score % 10;
       ten = parseInt(score / 10);
-      cxt.drawImage(data.image, scoreData[single][0], scoreData[single][1], 14, 20, 300, socreTop, 20, 28);
-      cxt.drawImage(data.image, scoreData[ten][0], scoreData[ten][1], 14, 20, 276, socreTop, 20, 28);
+      cxt.drawImage(data.image, scoreData[single][0], scoreData[single][1], 14, 20, 300, scoreTop, 20, 28);
+      cxt.drawImage(data.image, scoreData[ten][0], scoreData[ten][1], 14, 20, 276, scoreTop, 20, 28);
     } else {
       single = score % 10;
       ten = parseInt((score / 10) % 10);
       hundreds = parseInt(score / 100);
-      cxt.drawImage(data.image, scoreData[single][0], scoreData[single][1], 14, 20, 300, socreTop, 20, 28);
-      cxt.drawImage(data.image, scoreData[ten][0], scoreData[ten][1], 14, 20, 276, socreTop, 20, 28);
-      cxt.drawImage(data.image, scoreData[hundreds][0], scoreData[hundreds][1], 14, 20, 252, socreTop, 20, 28);
+      cxt.drawImage(data.image, scoreData[single][0], scoreData[single][1], 14, 20, 300, scoreTop, 20, 28);
+      cxt.drawImage(data.image, scoreData[ten][0], scoreData[ten][1], 14, 20, 276, scoreTop, 20, 28);
+      cxt.drawImage(data.image, scoreData[hundreds][0], scoreData[hundreds][1], 14, 20, 252, scoreTop, 20, 28);
     }
   }
 }
