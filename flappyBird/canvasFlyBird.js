@@ -79,13 +79,13 @@ var data = {
   TIME: {}
 }
 
-window.onload = function () {
+window.onload = function() {
   suitScreen();
   resetData();
   imageLoaded();
 }
 
-function suitScreen () {
+function suitScreen() {
   var width = document.documentElement.clientWidth;
   var height = document.documentElement.clientHeight;
   if (height / width > 1.5) {
@@ -97,10 +97,10 @@ function suitScreen () {
   canvas.style.transform = 'scale(' + data.system.scale + ', ' + data.system.scale + ') translateY(' + data.system.top + 'px)';
 }
 
-function imageLoaded () {
+function imageLoaded() {
   var image = new Image();
   image.src = 'flappyBird.png';
-  image.onload = function () {
+  image.onload = function() {
     loading.style.display = 'none';
     _setCanvasProperty();
     var cxt = canvas.getContext('2d');
@@ -118,13 +118,13 @@ function imageLoaded () {
     addEvent(canvas, 'click', cursorClickEvent);
   }
 
-  function _setCanvasProperty () {
+  function _setCanvasProperty() {
     canvas.width = 400;
     canvas.height = 600;
   }
 }
 
-function resetData () {
+function resetData() {
   data.score = 0;
   data.element.bird.color = parseInt(Math.random() * 1000) % 3;
   data.element.background.type = parseInt(Math.random() * 1000) % 2;
@@ -142,14 +142,14 @@ function resetData () {
   showElement('rankings', false);
 }
 
-function cursorClickEvent (e) {
+function cursorClickEvent(e) {
   var e = e || window.e;
   if (data.system.start === false) {
     if (cursorInStart(e)) {
       removeEvent(canvas, 'mousemove', cursorMoveEvent);
       this.style.cursor = 'default';
       showMask(true, data.system.dataRefreshRate * 10);
-      setTimeout(function () {
+      setTimeout(function() {
         getReady();
       }, data.system.dataRefreshRate * 10);
     }
@@ -158,7 +158,7 @@ function cursorClickEvent (e) {
   }
 }
 
-function cursorMoveEvent (e) {
+function cursorMoveEvent(e) {
   var e = e || window.e;
   if (cursorInStart(e)) {
     this.style.cursor = 'pointer';
@@ -167,29 +167,31 @@ function cursorMoveEvent (e) {
   }
 }
 
-function cursorInStart (e) {
-  if (_getMousePos(e).x > 128 * data.system.scale && _getMousePos(e).x < 272 * data.system.scale
-    && _getMousePos(e).y > 400 * data.system.scale&& _getMousePos(e).y < 481 * data.system.scale) {
+function cursorInStart(e) {
+  if (_getMousePos(e).x > 128 * data.system.scale && _getMousePos(e).x < 272 * data.system.scale && _getMousePos(e).y > 400 * data.system.scale && _getMousePos(e).y < 481 * data.system.scale) {
     return true;
   } else {
     return false;
   }
 
-  function _getMousePos (e) {
+  function _getMousePos(e) {
     var x = e.clientX - e.target.getBoundingClientRect().left;
     var y = e.clientY - e.target.getBoundingClientRect().top;
-    return {'x': x, 'y': y};
+    return {
+      'x': x,
+      'y': y
+    };
   }
 }
 
-function gamePlayingSpace (e) {
+function gamePlayingSpace(e) {
   var e = e || window.e;
   if (e && e.keyCode == 32) {
     gamePlaying();
   }
 }
 
-function gamePlaying () {
+function gamePlaying() {
   if (data.system.start === false) {
     data.element.bird.gravity = 0.4;
     showElement('title', false);
@@ -197,13 +199,13 @@ function gamePlaying () {
     showElement('obstacle', true);
     createObstacle();
   }
-  data.system.start  = true;
+  data.system.start = true;
   data.element.bird.speedY = -7;
 }
 
-function birdAnimate (animate) {
+function birdAnimate(animate) {
   if (animate === true) {
-    data.TIME.birdAnimate = setInterval(function () {
+    data.TIME.birdAnimate = setInterval(function() {
       data.element.bird.attitude = (data.element.bird.attitude + 1) % 3;
     }, data.system.dataRefreshRate * 9);
   } else {
@@ -211,7 +213,7 @@ function birdAnimate (animate) {
   }
 }
 
-function getReady () {
+function getReady() {
   data.element.title.type = 1;
   resetData();
   showMask(false, data.system.screenRefreshRate * 6);
@@ -225,9 +227,9 @@ function getReady () {
   dataUpdata(true);
 }
 
-function dataUpdata (update) {
+function dataUpdata(update) {
   if (update === true) {
-    data.TIME.dataUpdate = setInterval(function () {
+    data.TIME.dataUpdate = setInterval(function() {
       data.element.bird.speedY = data.element.bird.speedY + data.element.bird.gravity;
       data.element.bird.top = data.element.bird.top + data.element.bird.speedY;
       if (!collisionJudge()) {
@@ -236,12 +238,12 @@ function dataUpdata (update) {
     }, data.system.dataRefreshRate);
   } else {
     clearInterval(data.TIME.dataUpdate);
-  }  
+  }
 }
 
-function createObstacle () {
+function createObstacle() {
   var scoreFlag = true
-  data.TIME.obstacle = setInterval(function () {
+  data.TIME.obstacle = setInterval(function() {
     data.element.obstacle.previousAdopt = data.element.obstacle.previousAdopt + 1;
     for (var i = 0, len = data.element.obstacle.body.length; i < len; i++) {
       data.element.obstacle.body[i][0] -= 0.54;
@@ -249,7 +251,7 @@ function createObstacle () {
     if (data.element.obstacle.previousAdopt > 448) {
       data.element.obstacle.previousAdopt = 0;
       var obstacleTop = parseInt(Math.random() * 260) + 100,
-          obstacleBottom = obstacleTop + data.element.obstacle.adopt;
+        obstacleBottom = obstacleTop + data.element.obstacle.adopt;
       data.element.obstacle.body.push([400, obstacleTop, obstacleBottom]);
     }
     for (var i = 0; i < data.element.obstacle.body.length; i++) {
@@ -267,8 +269,9 @@ function createObstacle () {
   }, data.dataRefreshRate);
 }
 
-function collisionJudge () {
-  var birdWidth = 40, birdHeight = 32;
+function collisionJudge() {
+  var birdWidth = 40,
+    birdHeight = 32;
   if (data.element.bird.top > 554) {
     return false;
   }
@@ -282,7 +285,7 @@ function collisionJudge () {
   return true;
 }
 
-function gameover () {
+function gameover() {
   data.fail = true;
   data.speedY = 0;
   removeEvent(canvas, 'click', gamePlaying);
@@ -292,9 +295,9 @@ function gameover () {
   clearInterval(data.TIME.obstacle);
   dataUpdata(false);
   controlBottomStripe(false);
-  if (data.element.bird.top <= 554) {  
-    setTimeout(function () {
-      data.TIME.dataUpdate = setInterval(function () {
+  if (data.element.bird.top <= 554) {
+    setTimeout(function() {
+      data.TIME.dataUpdate = setInterval(function() {
         data.element.bird.speedY = data.element.bird.speedY + data.element.bird.gravity;
         data.element.bird.top = data.element.bird.top + data.element.bird.speedY;
         if (data.element.bird.top > 554) {
@@ -305,22 +308,22 @@ function gameover () {
     }, data.system.dataRefreshRate * 10);
   } else {
     restart();
-  } 
+  }
 }
 
-function restart () {
+function restart() {
   var score, bestScore;
   _scoreCheckout();
 
-  setTimeout(function () {
+  setTimeout(function() {
     _createGameover();
   }, data.system.dataRefreshRate * 20);
-  setTimeout(function () {
+  setTimeout(function() {
     showElement('rankings', true);
     _createRankings(score, bestScore);
   }, data.system.dataRefreshRate * 40);
 
-  function _scoreCheckout () {
+  function _scoreCheckout() {
     score = data.score;
     bestScore = getCookie('bestScore');
     if (bestScore <= score) {
@@ -330,7 +333,7 @@ function restart () {
     data.bestScore = bestScore;
   }
 
-  function _createGameover () {
+  function _createGameover() {
     showElement('score', false);
     data.element.title.type = 2;
     data.element.title.top = 100;
@@ -338,9 +341,9 @@ function restart () {
 
     _gameover1();
 
-    function _gameover1 () {
+    function _gameover1() {
       data.element.title.top--;
-      setTimeout(function () {
+      setTimeout(function() {
         if (data.element.title.top < 92) {
           _gameover2();
         } else {
@@ -349,9 +352,9 @@ function restart () {
       }, data.system.dataRefreshRate);
     }
 
-    function _gameover2 () {
+    function _gameover2() {
       data.element.title.top++;
-      setTimeout(function () {
+      setTimeout(function() {
         if (data.element.title.top < 100) {
           _gameover2();
         }
@@ -359,13 +362,13 @@ function restart () {
     }
   }
 
-  function _createRankings (score, bestScore) {
+  function _createRankings(score, bestScore) {
     data.element.rankings.top -= 20;
-    setTimeout(function () {
+    setTimeout(function() {
       if (data.element.rankings.top > 206) {
         _createRankings(score, bestScore);
       } else {
-        setTimeout(function () {
+        setTimeout(function() {
           showElement('startButton', true);
           addEvent(canvas, 'mousemove', cursorMoveEvent);
           addEvent(canvas, 'click', cursorClickEvent);
@@ -385,9 +388,9 @@ function restart () {
  * @deviation {Number} 每个周期偏移距离，应可以被24除尽
  *
  */
-function controlBottomStripe (move, deviation) {
+function controlBottomStripe(move, deviation) {
   if (move === true) {
-    data.TIME.bottomStripe = setInterval(function () {
+    data.TIME.bottomStripe = setInterval(function() {
       data.element.bottomStripe.deviation = (data.element.bottomStripe.deviation + deviation) % 24;
     }, data.system.dataRefreshRate);
   } else {
@@ -402,7 +405,7 @@ function controlBottomStripe (move, deviation) {
  *
  * @show {Boolean} true显示分数，false隐藏分数
  */
-function showElement (name, show) {
+function showElement(name, show) {
   data.element[name].show = show ? true : false;
 }
 
@@ -414,7 +417,7 @@ function showElement (name, show) {
  * @time {Number} 蒙版持续时间，单位ms
  *
  */
-function showMask (show, time) {
+function showMask(show, time) {
   var frequency = time / data.system.dataRefreshRate;
   data.element.mask.show = true;
   if (show === true) {
@@ -425,8 +428,8 @@ function showMask (show, time) {
     _reduceMask();
   }
 
-  function _addMask () {
-    setTimeout(function () {
+  function _addMask() {
+    setTimeout(function() {
       data.element.mask.alpha = data.element.mask.alpha + 1 / frequency;
       if (data.element.mask.alpha < 1) {
         _addMask();
@@ -436,9 +439,9 @@ function showMask (show, time) {
     }, data.system.dataRefreshRate);
   }
 
-  function _reduceMask () {
+  function _reduceMask() {
     data.element.mask.alpha = data.element.mask.alpha - 1 / frequency;
-    setTimeout(function () {
+    setTimeout(function() {
       if (data.element.mask.alpha > 0) {
         _reduceMask();
       } else {
@@ -449,10 +452,10 @@ function showMask (show, time) {
   }
 }
 
-function drawImage (cxt) {
+function drawImage(cxt) {
   var drawOrder = ['background', 'obstacle', 'bottomStripe', 'title', 'tip', 'startButton', 'score', 'rankings', 'bird', 'mask'];
-  data.TIME.drawImage = setInterval(function () {
-    for(var i = 0, len = drawOrder.length; i < len; i++){
+  data.TIME.drawImage = setInterval(function() {
+    for (var i = 0, len = drawOrder.length; i < len; i++) {
       if (data.element[drawOrder[i]].show === true) {
         data.element[drawOrder[i]].draw(cxt);
       }
@@ -460,7 +463,7 @@ function drawImage (cxt) {
   }, data.system.screenRefreshRate);
 }
 
-function drawBird (cxt) {
+function drawBird(cxt) {
   var birdPosition = [ //34, 24
     [
       [6, 982],
@@ -489,7 +492,7 @@ function drawBird (cxt) {
   cxt.restore();
 }
 
-function drawBackground (cxt) {
+function drawBackground(cxt) {
   if (data.element.background.type === 0) {
     cxt.drawImage(data.image, 0, 0, 288, 512, 0, -55, 400, 711);
   } else {
@@ -497,11 +500,11 @@ function drawBackground (cxt) {
   }
 }
 
-function drawBottomStripe (cxt) {
+function drawBottomStripe(cxt) {
   cxt.drawImage(data.image, 584 + data.element.bottomStripe.deviation, 0, 336, 22, 0, 569, 465, 31);
 }
 
-function drawObstacle (cxt) {
+function drawObstacle(cxt) {
   var obstacleData = [ //52, 320
     [112, 646],
     [168, 646]
@@ -512,23 +515,29 @@ function drawObstacle (cxt) {
   }
 }
 
-function drawTitle (cxt) {
+function drawTitle(cxt) {
   switch (data.element.title.type) {
-    case 0: cxt.drawImage(data.image, 702, 182, 178, 48, 76, 118, 247, 67); break;
-    case 1: cxt.drawImage(data.image, 590, 118, 184, 50, 75, 190, 256, 69); break;
-    case 2: cxt.drawImage(data.image, 790, 118, 192, 42, 67, data.element.title.top, 266, 58); break;
+    case 0:
+      cxt.drawImage(data.image, 702, 182, 178, 48, 76, 118, 247, 67);
+      break;
+    case 1:
+      cxt.drawImage(data.image, 590, 118, 184, 50, 75, 190, 256, 69);
+      break;
+    case 2:
+      cxt.drawImage(data.image, 790, 118, 192, 42, 67, data.element.title.top, 266, 58);
+      break;
   }
 }
 
-function drawTip (cxt) {
+function drawTip(cxt) {
   cxt.drawImage(data.image, 584, 182, 114, 98, 120, 295, 158, 136);
 }
 
-function drawStartButton (cxt) {
+function drawStartButton(cxt) {
   cxt.drawImage(data.image, 708, 236, 104, 58, 128, 400, 144, 81);
 }
 
-function drawScore  (cxt) {
+function drawScore(cxt) {
   var scoreData = [
     [992, 120], //0
     [268, 910], //1
@@ -539,7 +548,7 @@ function drawScore  (cxt) {
     [584, 368], //6
     [612, 368], //7
     [640, 368], //8
-    [668, 368]  //9
+    [668, 368] //9
   ];
   var single, ten, hundreds;
   if (data.score < 10) {
@@ -559,13 +568,13 @@ function drawScore  (cxt) {
   }
 }
 
-function drawRankings (cxt) {
+function drawRankings(cxt) {
   cxt.drawImage(data.image, 6, 518, 226, 114, 43, data.element.rankings.top, 314, 158);
   _drawMedal(data.score, data.bestScore, data.element.rankings.top);
   _drawScore(data.score, data.element.rankings.top, false);
   _drawScore(data.bestScore, data.element.rankings.top, true);
 
-  function _drawMedal (score, bestScore, scoreboardTop) {
+  function _drawMedal(score, bestScore, scoreboardTop) {
     var medalData = [ //44, 44
       [242, 564], //gold
       [224, 906], //silver
@@ -583,7 +592,7 @@ function drawRankings (cxt) {
     cxt.drawImage(data.image, medalData[ranking][0], medalData[ranking][1], 44, 44, 78, scoreTop, 62, 62);
   }
 
-  function _drawScore (score, scoreboardTop, isBest) {
+  function _drawScore(score, scoreboardTop, isBest) {
     var scoreData = [ //14, 20
       [274, 612], //0
       [274, 954], //1
@@ -594,7 +603,7 @@ function drawRankings (cxt) {
       [1010, 52], //6
       [1010, 84], //7
       [586, 484], //8
-      [622, 412]  //9
+      [622, 412] //9
     ];
 
     var single, ten, hundreds, scoreTop;
@@ -623,7 +632,7 @@ function drawRankings (cxt) {
   }
 }
 
-function drawMask (cxt) {
+function drawMask(cxt) {
   cxt.beginPath();
   cxt.fillStyle = 'rgba(0, 0, 0, ' + data.element.mask.alpha + ')';
   cxt.fillRect(0, 0, data.system.width, data.system.height);
