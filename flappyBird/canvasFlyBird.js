@@ -454,13 +454,14 @@ function showMask(show, time) {
 
 function drawImage(cxt) {
   var drawOrder = ['background', 'obstacle', 'bottomStripe', 'title', 'tip', 'startButton', 'score', 'rankings', 'bird', 'mask'];
-  data.TIME.drawImage = setInterval(function() {
+  data.TIME.drawImage = requestAnimationFrame(function animationDraw() {
     for (var i = 0, len = drawOrder.length; i < len; i++) {
       if (data.element[drawOrder[i]].show === true) {
         data.element[drawOrder[i]].draw(cxt);
       }
     }
-  }, data.system.screenRefreshRate);
+    data.TIME.drawImage = requestAnimationFrame(animationDraw);
+  });
 }
 
 function drawBird(cxt) {
