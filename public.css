@@ -1,3 +1,7 @@
+* {
+  margin: 0;
+  padding: 0; }
+
 #loading {
   position: absolute;
   z-index: 10;
@@ -10,8 +14,6 @@
 
 #canvas {
   display: block;
-  width: 400px;
-  height: 600px;
   margin: 0 auto; }
 
 /*# sourceMappingURL=public.css.map */
