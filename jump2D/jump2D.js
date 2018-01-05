@@ -1,6 +1,3 @@
-var loading = document.getElementById('loading');
-var canvas = document.getElementById('canvas');
-
 var data = {
   image: null,
   score: 0,
@@ -17,7 +14,6 @@ var data = {
   element: {
     background: {
       show: true,
-      type: 0, //0白天，1黑夜
       draw: drawBackground
     },
   },
@@ -27,18 +23,6 @@ var data = {
 window.onload = function() {
   suitScreen();
   imageLoaded();
-}
-
-function suitScreen() {
-  var width = document.documentElement.clientWidth;
-  var height = document.documentElement.clientHeight;
-  if (height / width > 0.75) {
-    data.system.scale = width / 640 - 0.1;
-  } else {
-    data.system.scale = height / 480 - 0.1;
-  }
-  data.system.top = (height - 480) / data.system.scale / 2;
-  canvas.style.transform = 'scale(' + data.system.scale + ', ' + data.system.scale + ') translateY(' + data.system.top + 'px)';
 }
 
 function imageLoaded() {
