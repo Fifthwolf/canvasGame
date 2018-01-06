@@ -16,6 +16,12 @@ var data = {
       show: true,
       draw: drawBackground
     },
+    title: {
+      show: true,
+      type: 0, //0 flappyBird, 1 Get Ready, 2 Game Over
+      top: 0,
+      draw: drawTitle
+    },
   },
   TIME: {}
 }
