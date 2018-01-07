@@ -1,5 +1,9 @@
 var data = {
   image: null,
+  cursor: {
+    x: null,
+    y: null
+  },
   system: {
     time: {
       previous: 0,
@@ -31,10 +35,9 @@ function imageLoaded() {
     _setCanvasProperty();
     data.system.cxt = canvas.getContext('2d');
     data.image = image;
-    game();
     data.system.time.previous = Date.now();
+    game();
     gameloop();
-    //drawImage(cxt);
   }
 
   function _setCanvasProperty() {
@@ -48,12 +51,15 @@ function game() {
 }
 
 function init() {
+  canvas.addEventListener('mousemove', onMouseMove, false);
   data.element.ane = new AneObj();
   data.element.ane.init();
   data.element.fruit = new FruitObj();
   data.element.fruit.init();
   data.element.mon = new MomObj();
   data.element.mon.init();
+  data.cursor.x = data.system.width * 0.5;
+  data.cursor.y = data.system.height * 0.5;
 }
 
 function gameloop() {
@@ -64,6 +70,7 @@ function gameloop() {
   drawBackground();
   data.element.ane.draw();
   data.element.fruit.draw();
+  data.element.mon.draw();
 }
 
 function drawBackground() {
@@ -85,18 +92,19 @@ function AneObj() {
     }
   }
   this.draw = function() {
-    data.system.cxt.save();
-    data.system.cxt.globalAlpha = 0.6;
-    data.system.cxt.lineWidth = 20;
-    data.system.cxt.lineCap = 'round';
-    data.system.cxt.strokeStyle = '#3b154e';
+    var cxt = data.system.cxt;
+    cxt.save();
+    cxt.globalAlpha = 0.6;
+    cxt.lineWidth = 20;
+    cxt.lineCap = 'round';
+    cxt.strokeStyle = '#3b154e';
     for (var i = 0; i < this.num; i++) {
-      data.system.cxt.beginPath();
-      data.system.cxt.moveTo(this.x[i], data.system.height);
-      data.system.cxt.lineTo(this.x[i], data.system.height - this.len[i]);
-      data.system.cxt.stroke();
+      cxt.beginPath();
+      cxt.moveTo(this.x[i], data.system.height);
+      cxt.lineTo(this.x[i], data.system.height - this.len[i]);
+      cxt.stroke();
     }
-    data.system.cxt.restore();
+    cxt.restore();
   }
 }
 
@@ -151,11 +159,46 @@ function FruitObj() {
 function MomObj() {
   this.x;
   this.y;
+  this.angle = 0;
   this.init = function() {
-    this.x = 0;
-    this.y;
+    this.x = data.system.width * 0.5;
+    this.y = data.system.height * 0.5;
   }
   this.draw = function() {
+    this.x = this._lerpDistance(data.cursor.x, this.x, 0.98);
+    this.y = this._lerpDistance(data.cursor.y, this.y, 0.98);
 
+    var beta = Math.atan2(data.cursor.y - this.y, data.cursor.x - this.x) + Math.PI;
+    this.angle = this._lerpAngle(beta, this.angle, 0.95);
+
+    var cxt = data.system.cxt;
+    cxt.save();
+    cxt.translate(this.x, this.y);
+    cxt.rotate(this.angle);
+    cxt.drawImage(data.image, 50, 0, 50, 55, -25, -28, 50, 55); //身体
+    cxt.drawImage(data.image, 30, 0, 12, 12, -6, -6, 12, 12); //眼睛
+    cxt.drawImage(data.image, 50, 115, 30, 43, 15, -22, 30, 43); //尾巴
+    cxt.restore();
+  }
+  this._lerpDistance = function(aim, cur, ratio) {
+    var delta = cur - aim;
+    return aim + delta * ratio;
+  }
+  this._lerpAngle = function(a, b, t) {
+    var d = b - a;
+    if (d > Math.PI) {
+      d = d - 2 * Math.PI;
+    }
+    if (d < -Math.PI) {
+      d = d + 2 * Math.PI;
+    }
+    return a + d * t;
+  }
+}
+
+function onMouseMove(e) {
+  if (e.offsetX || e.layerX) {
+    data.cursor.x = e.offsetX == undefined ? e.layerX : e.offsetX;
+    data.cursor.y = e.offsetY == undefined ? e.layerY : e.offsetY;
   }
 }
