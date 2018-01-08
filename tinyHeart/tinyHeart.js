@@ -22,7 +22,8 @@ var data = {
     mom: null,
     baby: null,
     momWave: null,
-    babyWave: null
+    babyWave: null,
+    dust: null
   }
 }
 
@@ -51,6 +52,7 @@ function imageLoaded() {
 }
 
 function game() {
+  canvas.removeEventListener('click', game);
   init();
 }
 
@@ -69,6 +71,8 @@ function init() {
   ele.momWave.init(10, 'white');
   ele.babyWave = new WavaObj();
   ele.babyWave.init(5, 'orange');
+  ele.dust = new DustObj();
+  ele.dust.init();
   data.information = new InformationObj();
   data.cursor.x = data.system.width * 0.5;
   data.cursor.y = data.system.height * 0.5;
@@ -88,6 +92,7 @@ function gameloop() {
   ele.fruit.draw();
   ele.mom.draw();
   ele.baby.draw();
+  ele.dust.draw();
   ele.momWave.draw();
   ele.babyWave.draw();
   data.information.draw();
@@ -104,26 +109,36 @@ function drawBackground() {
 }
 
 function AneObj() {
-  this.x = [];
-  this.len = [];
+  this.rootx = [];
+  this.headx = [];
+  this.heady = [];
+  this.amp = [];
+  this.time = 0;
   this.num = 50;
   this.init = function() {
     for (var i = 0; i < this.num; i++) {
-      this.x[i] = i * 16 + Math.random() * 20;
-      this.len[i] = 200 + Math.random() * 50;
+      this.rootx[i] = i * 16 + Math.random() * 20;
+      this.headx[i] = this.rootx[i];
+      this.heady[i] = data.system.height - 200 + Math.random() * 50;
+      this.amp[i] = Math.random() * 50 + 20;
     }
   }
   this.draw = function() {
+    this.time += data.system.time.delta * 0.001;
+    var deviation = Math.sin(this.time);
     var cxt = data.system.cxt;
     cxt.save();
     cxt.globalAlpha = 0.6;
     cxt.lineWidth = 20;
     cxt.lineCap = 'round';
+    cxt.shadowColor = '#5e257b';
+    cxt.shadowBlur = 20;
     cxt.strokeStyle = '#3b154e';
     for (var i = 0; i < this.num; i++) {
       cxt.beginPath();
-      cxt.moveTo(this.x[i], data.system.height);
-      cxt.lineTo(this.x[i], data.system.height - this.len[i]);
+      cxt.moveTo(this.rootx[i], data.system.height);
+      this.headx[i] = this.rootx[i] + deviation * this.amp[i];
+      cxt.quadraticCurveTo(this.rootx[i], data.system.height - 100, this.headx[i], this.heady[i]);
       cxt.stroke();
     }
     cxt.restore();
@@ -134,6 +149,7 @@ function FruitObj() {
   this.alive = [];
   this.x = [];
   this.y = [];
+  this.aneIndex = [];
   this.scale = [];
   this.spd = [];
   this.type = [];
@@ -149,6 +165,8 @@ function FruitObj() {
       if (this.alive[i] === true) {
         if (this.scale[i] <= 1) {
           this.scale[i] += this.spd[i] * data.system.time.delta * 0.01;
+          this.x[i] = data.element.ane.headx[this.aneIndex[i]];
+          this.y[i] = data.element.ane.heady[this.aneIndex[i]];
         } else {
           this.y[i] -= this.spd[i] * data.system.time.delta;
         }
@@ -166,9 +184,7 @@ function FruitObj() {
   }
   this.born = function(i) {
     var ane = data.element.ane;
-    var aneID = Math.floor(Math.random() * ane.num);
-    this.x[i] = ane.x[aneID];
-    this.y[i] = data.system.height - ane.len[aneID];
+    this.aneIndex[i] = Math.floor(Math.random() * ane.num);
     this.spd[i] = Math.random() * 0.04 + 0.04;
     this.scale[i] = 0;
     this.alive[i] = true;
@@ -436,6 +452,43 @@ function WavaObj() {
   }
 }
 
+function DustObj() {
+  this.x = [];
+  this.y = [];
+  this.amp = [];
+  this.style = [];
+  this.time;
+  this.num = 40;
+  this.position = [
+    [0, 95, 20],
+    [0, 119, 18],
+    [0, 142, 16],
+    [0, 163, 14],
+    [0, 183, 12],
+    [0, 201, 9],
+    [0, 216, 6]
+  ];
+
+  this.init = function() {
+    this.time = 0;
+    for (var i = 0; i < this.num; i++) {
+      this.x[i] = Math.random() * data.system.width;
+      this.y[i] = Math.random() * data.system.height;
+      this.amp[i] = 20 + Math.random() * 25;
+      this.style[i] = Math.floor(Math.random() * 7);
+    }
+  }
+  this.draw = function() {
+    this.time += data.system.time.delta * 0.001;
+    var deviation = Math.sin(this.time);
+    var cxt = data.system.cxt;
+    for (var i = 0; i < this.num; i++) {
+      var position = this.position[this.style[i]];
+      cxt.drawImage(data.image, position[0], position[1], position[2], position[2], this.x[i] + deviation * this.amp[i], this.y[i], position[2], position[2]);
+    }
+  }
+}
+
 function InformationObj() {
   this.fruitNum = 0;
   this.double = 1;
@@ -468,10 +521,12 @@ function InformationObj() {
       this.textAlpha += data.system.time.delta * 0.0005;
       if (this.textAlpha > 1) {
         this.textAlpha = 1;
+        canvas.addEventListener('click', game, false);
       }
       cxt.font = '40px Microsoft YaHei';
       cxt.shadowBlur = 20;
       cxt.shadowColor = '#000';
+      cxt.textAlign = 'center';
       cxt.fillStyle = 'rgba(255, 255, 255, ' + this.textAlpha + ')';
       cxt.fillText('GAMEOVER', w * 0.5, h * 0.5);
       cxt.restore();
