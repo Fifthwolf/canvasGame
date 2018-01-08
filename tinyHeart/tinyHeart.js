@@ -21,6 +21,8 @@ var data = {
     fruit: null,
     mom: null,
     baby: null,
+    momWave: null,
+    babyWave: null
   }
 }
 
@@ -63,12 +65,17 @@ function init() {
   ele.mom.init();
   ele.baby = new BabyObj();
   ele.baby.init();
+  ele.momWave = new WavaObj();
+  ele.momWave.init(10, 'white');
+  ele.babyWave = new WavaObj();
+  ele.babyWave.init(5, 'orange');
   data.information = new InformationObj();
   data.cursor.x = data.system.width * 0.5;
   data.cursor.y = data.system.height * 0.5;
 }
 
 function gameloop() {
+  var ele = data.element;
   requestAnimationFrame(gameloop);
   var now = Date.now();
   data.system.time.delta = now - data.system.time.previous;
@@ -77,10 +84,12 @@ function gameloop() {
     data.system.time.delta = 30;
   }
   drawBackground();
-  data.element.ane.draw();
-  data.element.fruit.draw();
-  data.element.mom.draw();
-  data.element.baby.draw();
+  ele.ane.draw();
+  ele.fruit.draw();
+  ele.mom.draw();
+  ele.baby.draw();
+  ele.momWave.draw();
+  ele.babyWave.draw();
   data.information.draw();
   momFruitsCollision();
   momBabyCollision();
@@ -144,9 +153,9 @@ function FruitObj() {
           this.y[i] -= this.spd[i] * data.system.time.delta;
         }
         if (this.type[i] === 'orange') {
-          data.system.cxt.drawImage(data.image, 0, 0, 21, 21, this.x[i] - this.scale[i] * 10.5, this.y[i] - this.scale[i] * 10.5, 21 * this.scale[i], 21 * this.scale[i]);
+          data.system.cxt.drawImage(data.image, 2, 2, 21, 21, this.x[i] - this.scale[i] * 10.5, this.y[i] - this.scale[i] * 10.5, 21 * this.scale[i], 21 * this.scale[i]);
         } else {
-          data.system.cxt.drawImage(data.image, 0, 30, 21, 21, this.x[i] - this.scale[i] * 10.5, this.y[i] - this.scale[i] * 10.5, 21 * this.scale[i], 21 * this.scale[i]);
+          data.system.cxt.drawImage(data.image, 2, 32, 21, 21, this.x[i] - this.scale[i] * 10.5, this.y[i] - this.scale[i] * 10.5, 21 * this.scale[i], 21 * this.scale[i]);
         }
         if (this.y[i] < -10) {
           this.alive[i] = false;
@@ -363,6 +372,70 @@ function BabyObj() {
   }
 }
 
+function WavaObj() {
+  this.x = [];
+  this.y = [];
+  this.alive = [];
+  this.r = [];
+  this.maxR;
+  this.num;
+  this.color;
+
+  this.init = function(num, color) {
+    this.num = num;
+    this.color = color;
+    for (var i = 0; i < this.num; i++) {
+      this.alive[i] = false;
+    }
+  }
+  this.draw = function() {
+    var cxt = data.system.cxt;
+    cxt.save();
+    if (this.color == 'white') {
+      cxt.shadowColor = '#fff';
+      cxt.lineWidth = 2;
+      cxt.shadowBlur = 10;
+      this.maxR = 60;
+    } else {
+      cxt.shadowColor = 'rgba(255, 56, 14)';
+      cxt.lineWidth = 1;
+      cxt.shadowBlur = 5;
+      this.maxR = 120;
+    }
+    for (var i = 0; i < this.num; i++) {
+      if (this.alive[i]) {
+        this.r[i] += data.system.time.delta * 0.05;
+        if (this.r[i] > this.maxR) {
+          this.alive[i] = false;
+          continue;
+        }
+        var alpha = 1 - this.r[i] / this.maxR;
+        cxt.beginPath();
+        cxt.arc(this.x[i], this.y[i], this.r[i], 0, Math.PI * 2);
+        cxt.closePath();
+        if (this.color == 'white') {
+          cxt.strokeStyle = 'rgba(255, 255, 255, ' + alpha + ')';
+        } else {
+          cxt.strokeStyle = 'rgba(203, 91, 0, ' + alpha + ')';
+        }
+        cxt.stroke();
+      }
+    }
+    cxt.restore();
+  }
+  this.born = function(x, y) {
+    for (var i = 0; i < this.num; i++) {
+      if (!this.alive[i]) {
+        this.alive[i] = true;
+        this.r[i] = 0;
+        this.x[i] = x;
+        this.y[i] = y;
+        break;
+      }
+    }
+  }
+}
+
 function InformationObj() {
   this.fruitNum = 0;
   this.double = 1;
@@ -408,18 +481,20 @@ function InformationObj() {
 
 function momFruitsCollision() {
   var fruit = data.element.fruit,
-    mom = data.element.mom;
+    mom = data.element.mom,
+    momWave = data.element.momWave;
   if (!data.information.over) {
     for (var i = 0; i < fruit.num; i++) {
       if (fruit.alive[i]) {
         var l = calLength(fruit.x[i], fruit.y[i], mom.x, mom.y);
         if (l < 400) {
+          momWave.born(fruit.x[i], fruit.y[i]);
+          fruit.dead(i);
           data.information.fruitNum++;
           mom.body.count = Math.min(mom.body.count + 1, 7);
           if (fruit.type[i] == 'blue') {
             data.information.double = 2;
           }
-          fruit.dead(i);
         }
       }
     }
@@ -428,10 +503,15 @@ function momFruitsCollision() {
 
 function momBabyCollision() {
   var mom = data.element.mom,
-    baby = data.element.baby;
+    baby = data.element.baby,
+    babyWave = data.element.babyWave;
   if (data.information.fruitNum > 0 && !data.information.over) {
     var l = calLength(mom.x, mom.y, baby.x, baby.y);
     if (l < 900) {
+      babyWave.born(baby.x, baby.y);
+      setTimeout(function() {
+        babyWave.born(baby.x, baby.y);
+      }, data.system.time.delta * 5);
       baby.body.count = 0;
       mom.body.count = 0;
       data.information.addScore();
