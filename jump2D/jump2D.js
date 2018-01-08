@@ -61,7 +61,7 @@ function drawImage(cxt) {
 }
 
 function drawBackground(cxt) {
-  cxt.drawImage(data.image, 0, 0, 288, 512, 0, 0, 640, 480);
+  cxt.drawImage(data.image, 0, 0, 640, 480, 0, 0, 640, 480);
 }
 
 function drawTitle (cxt) {
