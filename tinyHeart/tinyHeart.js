@@ -1,5 +1,6 @@
 var data = {
   image: null,
+  information: null,
   cursor: {
     x: null,
     y: null
@@ -52,15 +53,17 @@ function game() {
 }
 
 function init() {
+  var ele = data.element;
   canvas.addEventListener('mousemove', onMouseMove, false);
-  data.element.ane = new AneObj();
-  data.element.ane.init();
-  data.element.fruit = new FruitObj();
-  data.element.fruit.init();
-  data.element.mom = new MomObj();
-  data.element.mom.init();
-  data.element.baby = new BabyObj();
-  data.element.baby.init();
+  ele.ane = new AneObj();
+  ele.ane.init();
+  ele.fruit = new FruitObj();
+  ele.fruit.init();
+  ele.mom = new MomObj();
+  ele.mom.init();
+  ele.baby = new BabyObj();
+  ele.baby.init();
+  data.information = new InformationObj();
   data.cursor.x = data.system.width * 0.5;
   data.cursor.y = data.system.height * 0.5;
 }
@@ -78,6 +81,7 @@ function gameloop() {
   data.element.fruit.draw();
   data.element.mom.draw();
   data.element.baby.draw();
+  data.information.draw();
   momFruitsCollision();
   momBabyCollision();
 }
@@ -125,13 +129,9 @@ function FruitObj() {
   this.spd = [];
   this.type = [];
   this.num = 15;
+
   this.init = function() {
     for (var i = 0; i < this.num; i++) {
-      this.alive[i] = true;
-      this.x[i] = 0;
-      this.y[i] = 0;
-      this.spd[i] = Math.random() * 0.04 + 0.04;
-      this.type[i] = '';
       this.born(i);
     }
   }
@@ -160,6 +160,7 @@ function FruitObj() {
     var aneID = Math.floor(Math.random() * ane.num);
     this.x[i] = ane.x[aneID];
     this.y[i] = data.system.height - ane.len[aneID];
+    this.spd[i] = Math.random() * 0.04 + 0.04;
     this.scale[i] = 0;
     this.alive[i] = true;
     this.type[i] = Math.random() < 0.2 ? 'blue' : 'orange';
@@ -187,6 +188,32 @@ function MomObj() {
       [174, 115],
       [205, 115],
       [236, 115]
+    ]
+  }
+
+  this.body = {
+    count: 0,
+    position: [
+      [
+        [50, 0],
+        [100, 0],
+        [150, 0],
+        [200, 0],
+        [250, 0],
+        [300, 0],
+        [350, 0],
+        [400, 0]
+      ],
+      [
+        [50, 60],
+        [100, 60],
+        [150, 60],
+        [200, 60],
+        [250, 60],
+        [300, 60],
+        [350, 60],
+        [400, 60]
+      ]
     ]
   }
 
@@ -230,7 +257,7 @@ function MomObj() {
     cxt.translate(this.x, this.y);
     cxt.rotate(this.angle);
     cxt.drawImage(data.image, this.tail.position[this.tail.count][0], this.tail.position[this.tail.count][1], 30, 43, 15, -22, 30, 43); //尾巴
-    cxt.drawImage(data.image, 50, 0, 50, 55, -25, -28, 50, 55); //身体
+    cxt.drawImage(data.image, this.body.position[data.information.double - 1][this.body.count][0], this.body.position[data.information.double - 1][this.body.count][1], 50, 55, -25, -28, 50, 55); //身体
     cxt.drawImage(data.image, this.eye.position[this.eye.count][0], this.eye.position[this.eye.count][1], 12, 12, -6, -6, 12, 12); //眼睛
     cxt.restore();
   }
@@ -314,7 +341,7 @@ function BabyObj() {
       this.body.count = this.body.count + 1;
       if (this.body.count > 19) {
         this.body.count = 19;
-        //gameover
+        data.information.over = true;
       }
     }
 
@@ -336,14 +363,64 @@ function BabyObj() {
   }
 }
 
+function InformationObj() {
+  this.fruitNum = 0;
+  this.double = 1;
+  this.score = 0;
+  this.over = false;
+  this.textAlpha = 0;
+
+  this.addScore = function() {
+    this.score += this.fruitNum * this.double;
+    this.reset();
+  }
+  this.reset = function() {
+    this.fruitNum = 0;
+    this.double = 1;
+  }
+  this.draw = function() {
+    var w = data.system.width,
+      h = data.system.height;
+    var cxt = data.system.cxt;
+
+    cxt.save();
+    cxt.fillStyle = '#fff';
+    cxt.font = '20px Microsoft YaHei';
+    cxt.textAlign = 'center';
+    cxt.fillText('SCORE: ' + this.score, w * 0.5, h - 20);
+    cxt.restore();
+
+    if (this.over) {
+      cxt.save();
+      this.textAlpha += data.system.time.delta * 0.0005;
+      if (this.textAlpha > 1) {
+        this.textAlpha = 1;
+      }
+      cxt.font = '40px Microsoft YaHei';
+      cxt.shadowBlur = 20;
+      cxt.shadowColor = '#000';
+      cxt.fillStyle = 'rgba(255, 255, 255, ' + this.textAlpha + ')';
+      cxt.fillText('GAMEOVER', w * 0.5, h * 0.5);
+      cxt.restore();
+    }
+  }
+}
+
 function momFruitsCollision() {
   var fruit = data.element.fruit,
     mom = data.element.mom;
-  for (var i = 0; i < fruit.num; i++) {
-    if (fruit.alive[i]) {
-      var l = calLength(fruit.x[i], fruit.y[i], mom.x, mom.y);
-      if (l < 400) {
-        fruit.dead(i);
+  if (!data.information.over) {
+    for (var i = 0; i < fruit.num; i++) {
+      if (fruit.alive[i]) {
+        var l = calLength(fruit.x[i], fruit.y[i], mom.x, mom.y);
+        if (l < 400) {
+          data.information.fruitNum++;
+          mom.body.count = Math.min(mom.body.count + 1, 7);
+          if (fruit.type[i] == 'blue') {
+            data.information.double = 2;
+          }
+          fruit.dead(i);
+        }
       }
     }
   }
@@ -352,16 +429,22 @@ function momFruitsCollision() {
 function momBabyCollision() {
   var mom = data.element.mom,
     baby = data.element.baby;
-  var l = calLength(mom.x, mom.y, baby.x, baby.y);
-  if (l < 900) {
-    baby.body.count = 0;
+  if (data.information.fruitNum > 0 && !data.information.over) {
+    var l = calLength(mom.x, mom.y, baby.x, baby.y);
+    if (l < 900) {
+      baby.body.count = 0;
+      mom.body.count = 0;
+      data.information.addScore();
+    }
   }
 }
 
 function onMouseMove(e) {
-  if (e.offsetX || e.layerX) {
-    data.cursor.x = e.offsetX == undefined ? e.layerX : e.offsetX;
-    data.cursor.y = e.offsetY == undefined ? e.layerY : e.offsetY;
+  if (!data.information.over) {
+    if (e.offsetX || e.layerX) {
+      data.cursor.x = e.offsetX == undefined ? e.layerX : e.offsetX;
+      data.cursor.y = e.offsetY == undefined ? e.layerY : e.offsetY;
+    }
   }
 }
 
