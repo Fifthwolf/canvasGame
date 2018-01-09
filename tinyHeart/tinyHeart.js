@@ -79,13 +79,14 @@ function init() {
 }
 
 function gameloop() {
-  var ele = data.element;
+  var ele = data.element,
+    time = data.system.time;
   requestAnimationFrame(gameloop);
   var now = Date.now();
-  data.system.time.delta = now - data.system.time.previous;
-  data.system.time.previous = now;
-  if (data.system.time.delta > 30) {
-    data.system.time.delta = 30;
+  time.delta = now - time.previous;
+  time.previous = now;
+  if (time.delta > 30) {
+    time.delta = 30;
   }
   drawBackground();
   ele.ane.draw();
@@ -101,11 +102,12 @@ function gameloop() {
 }
 
 function drawBackground() {
-  var gr = data.system.cxt.createRadialGradient(data.system.width / 2, 0, data.system.height / 2, data.system.width / 2, 0, data.system.width);
+  var cxt = data.system.cxt;
+  var gr = cxt.createRadialGradient(data.system.width / 2, 0, data.system.height / 2, data.system.width / 2, 0, data.system.width);
   gr.addColorStop(0, '#0071ca');
   gr.addColorStop(0.8, '#01062c');
-  data.system.cxt.fillStyle = gr;
-  data.system.cxt.fillRect(0, 0, data.system.width, data.system.height);
+  cxt.fillStyle = gr;
+  cxt.fillRect(0, 0, data.system.width, data.system.height);
 }
 
 function AneObj() {
@@ -115,6 +117,7 @@ function AneObj() {
   this.amp = [];
   this.time = 0;
   this.num = 50;
+
   this.init = function() {
     for (var i = 0; i < this.num; i++) {
       this.rootx[i] = i * 16 + Math.random() * 20;
@@ -257,7 +260,7 @@ function MomObj() {
     this.y = data.system.height * 0.5;
     this.angle = 0;
   }
-  this.draw = function() {
+  this.move = function() {
     this.x = lerpDistance(data.cursor.x, this.x, 0.98);
     this.y = lerpDistance(data.cursor.y, this.y, 0.98);
 
@@ -276,7 +279,9 @@ function MomObj() {
       this.eye.timer = 0;
       this.eye.interval = this.eye.count ? 200 : Math.random() * 1500 + 2000;
     }
-
+  }
+  this.draw = function() {
+    this.move();
     var cxt = data.system.cxt;
     cxt.save();
     cxt.translate(this.x, this.y);
@@ -341,12 +346,13 @@ function BabyObj() {
       [0, 74]
     ]
   }
+
   this.init = function() {
     this.x = data.system.width * 0.5 - 50;
     this.y = data.system.height * 0.5 + 50;
     this.angle = 0;
   }
-  this.draw = function() {
+  this.move = function() {
     var mom = data.element.mom;
     this.x = lerpDistance(mom.x, this.x, 0.99);
     this.y = lerpDistance(mom.y, this.y, 0.99);
@@ -376,7 +382,9 @@ function BabyObj() {
       this.eye.timer = 0;
       this.eye.interval = this.eye.count ? 200 : Math.random() * 1500 + 2000;
     }
-
+  }
+  this.draw = function() {
+    this.move();
     var cxt = data.system.cxt;
     cxt.save();
     cxt.translate(this.x, this.y);
