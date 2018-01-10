@@ -1,29 +1,20 @@
 var data = {
   image: null,
-  score: 0,
-  bestScore: 0,
   system: {
-    dataRefreshRate: 20, //数据刷新率
-    start: false,
-    fail: false,
+    time: {
+      previous: 0,
+      delta: 0
+    },
+    cxt: null,
     scale: 1,
     top: 0,
     width: 640,
     height: 480
+
   },
   element: {
-    background: {
-      show: true,
-      draw: drawBackground
-    },
-    title: {
-      show: true,
-      type: 0, //0 flappyBird, 1 Get Ready, 2 Game Over
-      top: 0,
-      draw: drawTitle
-    },
+    monkey: null,
   },
-  TIME: {}
 }
 
 window.onload = function() {
@@ -37,9 +28,11 @@ function imageLoaded() {
   image.onload = function() {
     loading.style.display = 'none';
     _setCanvasProperty();
-    var cxt = canvas.getContext('2d');
+    data.system.cxt = canvas.getContext('2d');
     data.image = image;
-    drawImage(cxt);
+    data.system.time.previous = Date.now();
+    game();
+    gameloop();
   }
 
   function _setCanvasProperty() {
@@ -48,22 +41,49 @@ function imageLoaded() {
   }
 }
 
-function drawImage(cxt) {
-  var drawOrder = ['background'];
-  data.TIME.drawImage = requestAnimationFrame(function animationDraw() {
-    for (var i = 0, len = drawOrder.length; i < len; i++) {
-      if (data.element[drawOrder[i]].show === true) {
-        data.element[drawOrder[i]].draw(cxt);
-      }
-    }
-    data.TIME.drawImage = requestAnimationFrame(animationDraw);
-  });
+function game() {
+  init();
+}
+
+function init() {
+  var ele = data.element;
+  ele.monkey = new Monkey();
+  ele.monkey.init();
+}
+
+function gameloop() {
+  var time = data.system.time;
+  requestAnimationFrame(gameloop);
+  var now = Date.now();
+  time.delta = now - time.previous;
+  time.previous = now;
+  if (time.delta > 30) {
+    time.delta = 30;
+  }
+  drawImage();
+}
+
+function drawImage() {
+  var cxt = data.system.cxt,
+    ele = data.element;
+  drawBackground(cxt);
+  ele.monkey.draw(cxt);
 }
 
 function drawBackground(cxt) {
   cxt.drawImage(data.image, 0, 0, 640, 480, 0, 0, 640, 480);
 }
 
-function drawTitle (cxt) {
-  
+function Monkey() {
+  this.x;
+  this.y;
+  this.state;
+  this.init = function() {
+    this.x = 100;
+    this.y = 380;
+    this.state = 0;
+  }
+  this.draw = function(cxt) {
+
+  }
 }
