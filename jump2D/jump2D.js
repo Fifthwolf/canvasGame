@@ -18,6 +18,7 @@ var data = {
   },
   element: {
     monkey: null,
+    groove: null
   },
 }
 
@@ -55,6 +56,7 @@ function init() {
   var ele = data.element;
   ele.monkey = new Monkey();
   ele.monkey.init();
+  ele.groove = new powerGroove();
 }
 
 function gameloop() {
@@ -74,6 +76,7 @@ function drawImage() {
     ele = data.element;
   drawBackground(cxt);
   ele.monkey.draw(cxt);
+  ele.groove.draw(cxt);
 }
 
 function drawBackground(cxt) {
@@ -120,12 +123,64 @@ function Monkey() {
   }
 }
 
+function powerGroove() {
+  this.value = 0;
+  this.max = 100;
+  this.state = 0; //0静止，1增加，2减少
+
+  this.add = function() {
+    this.state = 1;
+
+  }
+  this.reduce = function() {
+    this.state = 2;
+
+  }
+  this.stop = function() {
+    this.state = 0;
+  }
+  this.change = function() {
+    if (this.state == 1) {
+      this.value += 3.5;
+      if (this.value > this.max) {
+        this.stop();
+        this.value = this.max;
+      }
+    }
+    if (this.state == 2) {
+      this.value -= 15;
+      if (this.value < 0) {
+        this.stop();
+        this.value = 0;
+      }
+    }
+  }
+  this.draw = function(cxt) {
+    this.change();
+    cxt.save();
+    cxt.beginPath();
+    cxt.font = "20px Verdana";
+    cxt.textAlign = "right";
+    cxt.fillStyle = '#f00';
+    cxt.fillText("POW", 490, 37);
+    cxt.rect(500, 20, this.value, 20);
+    cxt.fill();
+    cxt.beginPath();
+    cxt.strokeStyle = '#000';
+    cxt.rect(500, 20, 100, 20);
+    cxt.stroke();
+    cxt.restore();
+  }
+}
+
 function onMouseDown() {
   data.click.down = new Date();
+  data.element.groove.add();
 }
 
 function onMouseUp() {
   data.click.up = new Date();
+  data.element.groove.reduce();
   var time = data.click.up - data.click.down;
   data.element.monkey.jumpStart(time / 20);
 }
