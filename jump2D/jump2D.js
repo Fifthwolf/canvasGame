@@ -12,6 +12,10 @@ var data = {
     height: 480
 
   },
+  click: {
+    down: 0,
+    up: 0,
+  },
   element: {
     monkey: null,
   },
@@ -46,6 +50,8 @@ function game() {
 }
 
 function init() {
+  canvas.addEventListener('mousedown', onMouseDown, false);
+  canvas.addEventListener('mouseup', onMouseUp, false);
   var ele = data.element;
   ele.monkey = new Monkey();
   ele.monkey.init();
@@ -77,13 +83,49 @@ function drawBackground(cxt) {
 function Monkey() {
   this.x;
   this.y;
+  this.vy;
+  this.gravity = 1;
   this.state;
+  this.position = [
+    [660, 0],
+    [660, 0]
+  ];
+
   this.init = function() {
     this.x = 100;
-    this.y = 380;
+    this.y = 430;
     this.state = 0;
   }
-  this.draw = function(cxt) {
-
+  this.jumpStart = function(initial) {
+    initial = Math.min(initial, 25);
+    this.vy = -initial;
+    this.state = 1;
   }
+  this.jump = function() {
+    this.y = this.y + this.vy;
+    this.vy = this.vy + this.gravity;
+    if (this.y > 430) {
+      this.y = 430;
+      this.state = 0;
+    }
+  }
+  this.draw = function(cxt) {
+    if (this.state == 1) {
+      this.jump();
+    }
+    cxt.save();
+    cxt.translate(this.x, this.y); //坐标原点位于猴子正中下方
+    cxt.drawImage(data.image, this.position[this.state][0], this.position[this.state][1], 100, 100, -50, -100, 100, 100);
+    cxt.restore();
+  }
+}
+
+function onMouseDown() {
+  data.click.down = new Date();
+}
+
+function onMouseUp() {
+  data.click.up = new Date();
+  var time = data.click.up - data.click.down;
+  data.element.monkey.jumpStart(time / 20);
 }
