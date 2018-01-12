@@ -91,7 +91,7 @@ function Monkey() {
   this.state;
   this.position = [
     [660, 0],
-    [660, 0]
+    [660, 120]
   ];
 
   this.init = function() {
@@ -121,6 +121,10 @@ function Monkey() {
     cxt.drawImage(data.image, this.position[this.state][0], this.position[this.state][1], 100, 100, -50, -100, 100, 100);
     cxt.restore();
   }
+}
+
+function Roof(){
+  
 }
 
 function powerGroove() {
