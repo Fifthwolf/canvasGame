@@ -18,7 +18,8 @@ var data = {
   },
   element: {
     monkey: null,
-    groove: null
+    groove: null,
+    roof: null
   },
 }
 
@@ -57,6 +58,8 @@ function init() {
   ele.monkey = new Monkey();
   ele.monkey.init();
   ele.groove = new powerGroove();
+  ele.roof = new Roof();
+  ele.roof.init();
 }
 
 function gameloop() {
@@ -77,6 +80,7 @@ function drawImage() {
   drawBackground(cxt);
   ele.monkey.draw(cxt);
   ele.groove.draw(cxt);
+  ele.roof.draw(cxt);
 }
 
 function drawBackground(cxt) {
@@ -86,6 +90,7 @@ function drawBackground(cxt) {
 function Monkey() {
   this.x;
   this.y;
+  this.vx;
   this.vy;
   this.gravity = 1;
   this.state;
@@ -100,16 +105,19 @@ function Monkey() {
     this.state = 0;
   }
   this.jumpStart = function(initial) {
-    initial = Math.min(initial, 25);
+    initial = Math.min(initial, 15);
     this.vy = -initial;
+    this.vx = initial;
     this.state = 1;
   }
   this.jump = function() {
+    this.x += this.vx;
     this.y = this.y + this.vy;
     this.vy = this.vy + this.gravity;
     if (this.y > 430) {
       this.y = 430;
       this.state = 0;
+      landing();
     }
   }
   this.draw = function(cxt) {
@@ -123,8 +131,33 @@ function Monkey() {
   }
 }
 
-function Roof(){
-  
+function Roof() {
+  this.roof = [];
+
+  this.init = function() {
+    this.roof.push({
+      width: 100,
+      center: 500,
+      type: 0
+    });
+  }
+  this.create = function() {
+    this.roof.push({
+      width: 100,
+      center: 500,
+      type: 0
+    });
+  }
+  this.draw = function(cxt) {
+    cxt.save();
+    for (var i = 0, len = this.roof.length; i < len; i++) {
+      cxt.beginPath();
+      cxt.fillStyle = '#00f';
+      cxt.rect(this.roof[i].center - this.roof[i].width / 2, 427, this.roof[i].width, 53);
+      cxt.fill();
+    }
+    cxt.restore();
+  }
 }
 
 function powerGroove() {
@@ -145,7 +178,7 @@ function powerGroove() {
   }
   this.change = function() {
     if (this.state == 1) {
-      this.value += 3.5;
+      this.value += 6;
       if (this.value > this.max) {
         this.stop();
         this.value = this.max;
@@ -174,6 +207,21 @@ function powerGroove() {
     cxt.rect(500, 20, 100, 20);
     cxt.stroke();
     cxt.restore();
+  }
+}
+
+function landing() {
+  var ele = data.element;
+  var correct = 10;
+  var monkeyX = ele.monkey.x,
+    roofCenter = ele.roof.roof[ele.roof.roof.length - 1].center,
+    roofWidth = ele.roof.roof[ele.roof.roof.length - 1].width;
+  console.log(monkeyX);
+  console.log(roofCenter);
+  if (monkeyX > roofCenter - roofWidth - correct / 2 && monkeyX < roofCenter + roofWidth / 2 + correct) {
+    console.log('win');
+  } else {
+    console.log('fail');
   }
 }
 
