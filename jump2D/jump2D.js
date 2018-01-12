@@ -94,6 +94,7 @@ function Monkey() {
   this.vy;
   this.gravity = 1;
   this.state;
+  this.judge = false;
   this.position = [
     [660, 0],
     [660, 120]
@@ -109,17 +110,26 @@ function Monkey() {
     this.vy = -initial;
     this.vx = initial;
     this.state = 1;
+    this.judge = false;
   }
   this.jump = function() {
     this.x += this.vx;
     this.y = this.y + this.vy;
     this.vy = this.vy + this.gravity;
-    if (this.y > 430) {
-      this.y = 430;
-      this.state = 0;
+    if (!this.judge && this.y > 430) {
       landing();
+      this.judge = true;
     }
   }
+  this.jumpWin = function(next) {
+    console.log(next);
+    this.state = 0;
+    this.y = 430;
+  }
+  this.jumpFail = function() {
+    //失败界面
+  }
+
   this.draw = function(cxt) {
     if (this.state == 1) {
       this.jump();
@@ -132,10 +142,10 @@ function Monkey() {
 }
 
 function Roof() {
-  this.roof = [];
+  this.example = [];
 
   this.init = function() {
-    this.roof.push({
+    this.example.push({
       width: 100,
       center: 100,
       type: 0
@@ -143,7 +153,7 @@ function Roof() {
     this.create();
   }
   this.create = function() {
-    this.roof.push({
+    this.example.push({
       width: 100,
       center: 500,
       type: 0
@@ -151,10 +161,10 @@ function Roof() {
   }
   this.draw = function(cxt) {
     cxt.save();
-    for (var i = 0, len = this.roof.length; i < len; i++) {
+    for (var i = 0, len = this.example.length; i < len; i++) {
       cxt.beginPath();
       cxt.fillStyle = '#00f';
-      cxt.rect(this.roof[i].center - this.roof[i].width / 2, 427, this.roof[i].width, 53);
+      cxt.rect(this.example[i].center - this.example[i].width / 2, 427, this.example[i].width, 53);
       cxt.fill();
     }
     cxt.restore();
@@ -212,20 +222,18 @@ function powerGroove() {
 
 function landing() {
   var ele = data.element,
-    roof = ele.roof.roof;
+    example = ele.roof.example;
   var correct = 10;
-  var monkeyX = ele.monkey.x,
-    roofCenter = roof[roof.length - 1].center,
-    roofWidth = roof[roof.length - 1].width;
-  console.log(monkeyX);
-  console.log(roofCenter);
-  if (monkeyX < roofCenter - roofWidth - correct / 2) {
-    //距离不够
-  } else if (monkeyX > roofCenter + roofWidth / 2 + correct) {
-    //距离过远
-  } else {
-    console.log('win');
+  var monkeyX = ele.monkey.x;
+  for (var i = 0, len = example.length; i < len; i++) {
+    var exampleCenter = example[i].center,
+      exampleWidth = example[i].width;
+    if (monkeyX > exampleCenter - exampleWidth / 2 - correct && monkeyX < exampleCenter + exampleWidth / 2 + correct) {
+      ele.monkey.jumpWin(i == len - 1);
+      return;
+    }
   }
+  ele.monkey.jumpFail();
 }
 
 function onMouseDown() {
