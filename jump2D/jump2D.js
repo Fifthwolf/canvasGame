@@ -137,9 +137,10 @@ function Roof() {
   this.init = function() {
     this.roof.push({
       width: 100,
-      center: 500,
+      center: 100,
       type: 0
     });
+    this.create();
   }
   this.create = function() {
     this.roof.push({
@@ -167,7 +168,6 @@ function powerGroove() {
 
   this.add = function() {
     this.state = 1;
-
   }
   this.reduce = function() {
     this.state = 2;
@@ -211,17 +211,20 @@ function powerGroove() {
 }
 
 function landing() {
-  var ele = data.element;
+  var ele = data.element,
+    roof = ele.roof.roof;
   var correct = 10;
   var monkeyX = ele.monkey.x,
-    roofCenter = ele.roof.roof[ele.roof.roof.length - 1].center,
-    roofWidth = ele.roof.roof[ele.roof.roof.length - 1].width;
+    roofCenter = roof[roof.length - 1].center,
+    roofWidth = roof[roof.length - 1].width;
   console.log(monkeyX);
   console.log(roofCenter);
-  if (monkeyX > roofCenter - roofWidth - correct / 2 && monkeyX < roofCenter + roofWidth / 2 + correct) {
-    console.log('win');
+  if (monkeyX < roofCenter - roofWidth - correct / 2) {
+    //距离不够
+  } else if (monkeyX > roofCenter + roofWidth / 2 + correct) {
+    //距离过远
   } else {
-    console.log('fail');
+    console.log('win');
   }
 }
 
