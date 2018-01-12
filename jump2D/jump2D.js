@@ -57,7 +57,7 @@ function init() {
   var ele = data.element;
   ele.monkey = new Monkey();
   ele.monkey.init();
-  ele.groove = new powerGroove();
+  ele.groove = new PowerGroove();
   ele.roof = new Roof();
   ele.roof.init();
 }
@@ -106,6 +106,8 @@ function Monkey() {
     this.state = 0;
   }
   this.jumpStart = function(initial) {
+    canvas.removeEventListener('mousedown', onMouseDown);
+    canvas.removeEventListener('mouseup', onMouseUp);
     initial = Math.min(initial, 15);
     this.vy = -initial;
     this.vx = initial;
@@ -123,6 +125,8 @@ function Monkey() {
   }
   this.jumpWin = function(next) {
     console.log(next);
+    canvas.addEventListener('mousedown', onMouseDown, false);
+    canvas.addEventListener('mouseup', onMouseUp, false);
     this.state = 0;
     this.y = 430;
   }
@@ -171,7 +175,7 @@ function Roof() {
   }
 }
 
-function powerGroove() {
+function PowerGroove() {
   this.value = 0;
   this.max = 100;
   this.state = 0; //0静止，1增加，2减少
