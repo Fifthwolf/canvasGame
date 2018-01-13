@@ -18,8 +18,10 @@ var data = {
   },
   element: {
     monkey: null,
+    roof: null,
+    sun: null,
     groove: null,
-    roof: null
+    information: null
   },
 }
 
@@ -52,14 +54,15 @@ function game() {
 }
 
 function init() {
-  canvas.addEventListener('mousedown', onMouseDown, false);
-  canvas.addEventListener('mouseup', onMouseUp, false);
   var ele = data.element;
+  ele.information = new Information();
+  ele.information.init();
   ele.monkey = new Monkey();
   ele.monkey.init();
   ele.groove = new PowerGroove();
   ele.roof = new Roof();
   ele.roof.init();
+  ele.sun = new Sun();
 }
 
 function gameloop() {
@@ -81,6 +84,8 @@ function drawImage() {
   ele.monkey.draw(cxt);
   ele.groove.draw(cxt);
   ele.roof.draw(cxt);
+  ele.sun.draw(cxt);
+  ele.information.draw(cxt);
 }
 
 function drawBackground(cxt) {
@@ -101,7 +106,7 @@ function Monkey() {
   ];
 
   this.init = function() {
-    this.x = 100;
+    this.x = 150;
     this.y = 430;
     this.state = 0;
   }
@@ -124,12 +129,17 @@ function Monkey() {
     }
   }
   this.jumpWin = function(next) {
-    console.log(next);
-    canvas.addEventListener('mousedown', onMouseDown, false);
-    canvas.addEventListener('mouseup', onMouseUp, false);
+    data.element.information.scoreAdd();
+    console.log(data.element.information.score);
+
     this.state = 0;
     this.y = 430;
-  }
+    if (next) {
+      allReturn();
+    } else {
+      canvas.addEventListener('mousedown', onMouseDown, false);
+    }
+  };
   this.jumpFail = function() {
     //失败界面
   }
@@ -147,22 +157,54 @@ function Monkey() {
 
 function Roof() {
   this.example = [];
+  this.difficulty;
 
   this.init = function() {
+    this.difficulty = 1;
     this.example.push({
-      width: 100,
-      center: 100,
+      width: 200,
+      center: 150,
       type: 0
     });
     this.create();
   }
   this.create = function() {
+    var widthBase, width, center;
+    this.difficulty = Math.floor(data.element.information.score / 5);
+    switch (this.difficulty) {
+      case 0:
+        widthBase = 160;
+        break;
+      case 1:
+        widthBase = 120;
+        break;
+      case 2:
+        widthBase = 90;
+        break;
+      case 3:
+        widthBase = 60;
+        break;
+      default:
+        widthBase = 30;
+        break;
+    }
+    width = widthBase + Math.floor(Math.random() * widthBase / 2);
+    center = 500 - widthBase / 2 + Math.floor(Math.random() * widthBase / 2);
     this.example.push({
-      width: 100,
-      center: 500,
+      width: width,
+      center: center,
       type: 0
     });
+    this.example[this.example.length - 2].center = 150;
+    this.clear();
+    canvas.addEventListener('mousedown', onMouseDown, false);
   }
+  this.clear = function() {
+    if (this.example.length > 2) {
+      this.example = this.example.slice(1);
+    }
+  }
+
   this.draw = function(cxt) {
     cxt.save();
     for (var i = 0, len = this.example.length; i < len; i++) {
@@ -171,6 +213,21 @@ function Roof() {
       cxt.rect(this.example[i].center - this.example[i].width / 2, 427, this.example[i].width, 53);
       cxt.fill();
     }
+    cxt.restore();
+  }
+}
+
+function Sun() {
+  this.x = 100;
+  this.y = 80;
+  this.rotate = 0;
+
+  this.draw = function(cxt) {
+    this.rotate = (this.rotate - 1) % 360;
+    cxt.save();
+    cxt.translate(this.x, this.y); //坐标原点位于猴子正中下方
+    cxt.rotate(this.rotate * Math.PI / 180);
+    cxt.drawImage(data.image, 660, 240, 100, 100, -50, -50, 100, 100);
     cxt.restore();
   }
 }
@@ -224,6 +281,25 @@ function PowerGroove() {
   }
 }
 
+function Information() {
+  this.score;
+
+  this.init = function() {
+    this.score = 0;
+  }
+  this.scoreAdd = function() {
+    this.score++;
+  }
+  this.draw = function(cxt) {
+    cxt.save();
+    cxt.fillStyle = '#fff';
+    cxt.font = '20px Microsoft YaHei';
+    cxt.textAlign = 'center';
+    cxt.fillText('SCORE: ' + this.score, 320, 38);
+    cxt.restore();
+  }
+}
+
 function landing() {
   var ele = data.element,
     example = ele.roof.example;
@@ -233,14 +309,37 @@ function landing() {
     var exampleCenter = example[i].center,
       exampleWidth = example[i].width;
     if (monkeyX > exampleCenter - exampleWidth / 2 - correct && monkeyX < exampleCenter + exampleWidth / 2 + correct) {
-      ele.monkey.jumpWin(i == len - 1);
+      ele.monkey.jumpWin(i == len - 1); //判断是否落到下一个房顶上
       return;
     }
   }
   ele.monkey.jumpFail();
 }
 
+function allReturn() {
+  var ele = data.element;
+  var exa = ele.roof.example;
+  var moveLength = exa[exa.length - 1].center - exa[exa.length - 2].center;
+  var movesNumber = 20; //移动次数
+  var singleLength = moveLength / movesNumber; //单次移动距离
+
+  requestAnimationFrame(_move);
+
+  function _move() {
+    ele.monkey.x -= singleLength;
+    for (var i = 0, len = exa.length; i < len; i++) {
+      exa[i].center -= singleLength;
+    }
+    if (exa[exa.length - 1].center > 150) {
+      requestAnimationFrame(_move);
+    } else {
+      ele.roof.create();
+    }
+  }
+}
+
 function onMouseDown() {
+  canvas.addEventListener('mouseup', onMouseUp, false);
   data.click.down = new Date();
   data.element.groove.add();
 }
