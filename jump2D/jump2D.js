@@ -20,6 +20,8 @@ var data = {
     monkey: null,
     roof: null,
     sun: null,
+    cloud1: null,
+    cloud2: null,
     groove: null,
     information: null
   },
@@ -63,6 +65,8 @@ function init() {
   ele.roof = new Roof();
   ele.roof.init();
   ele.sun = new Sun();
+  ele.cloud1 = new Cloud(780, 0, 360, 100, 167, 108);
+  ele.cloud2 = new Cloud(780, 140, 500, 150, 169, 83);
 }
 
 function gameloop() {
@@ -86,6 +90,8 @@ function drawImage() {
   ele.roof.draw(cxt);
   ele.sun.draw(cxt);
   ele.information.draw(cxt);
+  ele.cloud1.draw(cxt);
+  ele.cloud2.draw(cxt);
 }
 
 function drawBackground(cxt) {
@@ -113,15 +119,15 @@ function Monkey() {
   this.jumpStart = function(initial) {
     canvas.removeEventListener('mousedown', onMouseDown);
     canvas.removeEventListener('mouseup', onMouseUp);
-    initial = Math.min(initial, 15);
+    initial = Math.min(initial, 16);
     this.vy = -initial;
     this.vx = initial;
     this.state = 1;
     this.judge = false;
   }
   this.jump = function() {
-    this.x += this.vx;
-    this.y = this.y + this.vy;
+    this.x += this.vx * data.system.time.delta / 20;
+    this.y = this.y + this.vy * data.system.time.delta / 20;
     this.vy = this.vy + this.gravity;
     if (!this.judge && this.y > 430) {
       landing();
@@ -129,13 +135,13 @@ function Monkey() {
     }
   }
   this.jumpWin = function(next) {
-    data.element.information.scoreAdd();
-    console.log(data.element.information.score);
-
     this.state = 0;
     this.y = 430;
+
     if (next) {
+      data.element.information.scoreAdd();
       allReturn();
+      console.log(data.element.information.score);
     } else {
       canvas.addEventListener('mousedown', onMouseDown, false);
     }
@@ -150,7 +156,7 @@ function Monkey() {
     }
     cxt.save();
     cxt.translate(this.x, this.y); //坐标原点位于猴子正中下方
-    cxt.drawImage(data.image, this.position[this.state][0], this.position[this.state][1], 100, 100, -50, -100, 100, 100);
+    cxt.drawImage(data.image, this.position[this.state][0], this.position[this.state][1], 100, 100, -50, -97, 100, 100);
     cxt.restore();
   }
 }
@@ -164,6 +170,7 @@ function Roof() {
     this.example.push({
       width: 200,
       center: 150,
+      height: 50,
       type: 0
     });
     this.create();
@@ -193,11 +200,25 @@ function Roof() {
     this.example.push({
       width: width,
       center: center,
+      height: 0,
       type: 0
     });
     this.example[this.example.length - 2].center = 150;
+    this.up(this.example[this.example.length - 1]);
     this.clear();
     canvas.addEventListener('mousedown', onMouseDown, false);
+  }
+  this.up = function(example) {
+    requestAnimationFrame(_up);
+
+    function _up() {
+      example.height += data.system.time.delta / 4;
+      if (example.height < 50) {
+        requestAnimationFrame(_up);
+      } else {
+        example.height = 50;
+      }
+    }
   }
   this.clear = function() {
     if (this.example.length > 2) {
@@ -210,7 +231,7 @@ function Roof() {
     for (var i = 0, len = this.example.length; i < len; i++) {
       cxt.beginPath();
       cxt.fillStyle = '#00f';
-      cxt.rect(this.example[i].center - this.example[i].width / 2, 427, this.example[i].width, 53);
+      cxt.rect(this.example[i].center - this.example[i].width / 2, 480 - this.example[i].height, this.example[i].width, 50);
       cxt.fill();
     }
     cxt.restore();
@@ -223,11 +244,44 @@ function Sun() {
   this.rotate = 0;
 
   this.draw = function(cxt) {
-    this.rotate = (this.rotate - 1) % 360;
+    this.rotate = (this.rotate - data.system.time.delta / 20) % 360;
     cxt.save();
     cxt.translate(this.x, this.y); //坐标原点位于猴子正中下方
     cxt.rotate(this.rotate * Math.PI / 180);
     cxt.drawImage(data.image, 660, 240, 100, 100, -50, -50, 100, 100);
+    cxt.restore();
+  }
+}
+
+function Cloud(x, y, drawX, drawY, width, height) {
+  this.x = x;
+  this.y = y;
+  this.drawX = drawX;
+  this.drawY = drawY;
+  this.width = width;
+  this.height = height;
+  this.swayX = 0;
+  this.swayState = parseInt(Math.random() * 100) % 2; //0向左，1向右
+
+  this.sway = function() {
+    var limit = this.width / 5;
+    if (this.swayState) {
+      this.swayX += data.system.time.delta / 20;
+      if (this.swayX > limit) {
+        this.swayState = 0;
+      }
+    } else {
+      this.swayX -= data.system.time.delta / 20;
+      if (this.swayX < -limit) {
+        this.swayState = 1;
+      }
+    }
+  }
+  this.draw = function(cxt) {
+    this.sway();
+    cxt.save();
+    cxt.translate(this.drawX + this.swayX, this.drawY); //坐标原点位于猴子正中下方
+    cxt.drawImage(data.image, this.x, this.y, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
     cxt.restore();
   }
 }
@@ -249,14 +303,14 @@ function PowerGroove() {
   }
   this.change = function() {
     if (this.state == 1) {
-      this.value += 6;
+      this.value += 3 * data.system.time.delta / 20;
       if (this.value > this.max) {
         this.stop();
         this.value = this.max;
       }
     }
     if (this.state == 2) {
-      this.value -= 15;
+      this.value -= 15 * data.system.time.delta / 20;
       if (this.value < 0) {
         this.stop();
         this.value = 0;
@@ -319,9 +373,7 @@ function landing() {
 function allReturn() {
   var ele = data.element;
   var exa = ele.roof.example;
-  var moveLength = exa[exa.length - 1].center - exa[exa.length - 2].center;
-  var movesNumber = 20; //移动次数
-  var singleLength = moveLength / movesNumber; //单次移动距离
+  var singleLength = data.system.time.delta * 0.75; //单次移动距离
 
   requestAnimationFrame(_move);
 
@@ -348,5 +400,5 @@ function onMouseUp() {
   data.click.up = new Date();
   data.element.groove.reduce();
   var time = data.click.up - data.click.down;
-  data.element.monkey.jumpStart(time / 20);
+  data.element.monkey.jumpStart(time / 40);
 }
