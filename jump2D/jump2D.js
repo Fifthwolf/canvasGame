@@ -65,8 +65,8 @@ function init() {
   ele.roof = new Roof();
   ele.roof.init();
   ele.sun = new Sun();
-  ele.cloud1 = new Cloud(780, 0, 360, 100, 167, 108);
-  ele.cloud2 = new Cloud(780, 140, 500, 150, 169, 83);
+  ele.cloud1 = new Cloud(760, 0, 360, 100, 200, 98, 0.75);
+  ele.cloud2 = new Cloud(760, 110, 500, 150, 160, 110, 0.75);
 }
 
 function gameloop() {
@@ -141,7 +141,6 @@ function Monkey() {
     if (next) {
       data.element.information.scoreAdd();
       allReturn();
-      console.log(data.element.information.score);
     } else {
       canvas.addEventListener('mousedown', onMouseDown, false);
     }
@@ -253,13 +252,14 @@ function Sun() {
   }
 }
 
-function Cloud(x, y, drawX, drawY, width, height) {
+function Cloud(x, y, drawX, drawY, width, height, scale) {
   this.x = x;
   this.y = y;
   this.drawX = drawX;
   this.drawY = drawY;
   this.width = width;
   this.height = height;
+  this.scale = scale;
   this.swayX = 0;
   this.swayState = parseInt(Math.random() * 100) % 2; //0向左，1向右
 
@@ -281,6 +281,7 @@ function Cloud(x, y, drawX, drawY, width, height) {
     this.sway();
     cxt.save();
     cxt.translate(this.drawX + this.swayX, this.drawY); //坐标原点位于猴子正中下方
+    cxt.scale(this.scale, this.scale);
     cxt.drawImage(data.image, this.x, this.y, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
     cxt.restore();
   }
