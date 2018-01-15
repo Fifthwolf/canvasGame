@@ -454,7 +454,8 @@ function allReturn() {
   }
 }
 
-function onMouseDown() {
+function onMouseDown(e) {
+  e.preventDefault();
   if (data.system.mobile) {
     canvas.addEventListener('touchend', onMouseUp, false);
   } else {
