@@ -185,12 +185,10 @@ function Monkey() {
 
 function Roof() {
   this.example = [];
-  this.difficulty;
 
   this.init = function() {
-    this.difficulty = 1;
     this.example.push({
-      width: 200,
+      width: 160,
       center: 150,
       height: 50,
       type: 0
@@ -199,24 +197,7 @@ function Roof() {
   }
   this.create = function() {
     var widthBase, width, center;
-    this.difficulty = Math.floor(data.element.information.score / 5);
-    switch (this.difficulty) {
-      case 0:
-        widthBase = 160;
-        break;
-      case 1:
-        widthBase = 120;
-        break;
-      case 2:
-        widthBase = 90;
-        break;
-      case 3:
-        widthBase = 60;
-        break;
-      default:
-        widthBase = 30;
-        break;
-    }
+    widthBase = Math.max(160 - data.element.information.score * 4, 30);
     width = widthBase + Math.floor(Math.random() * widthBase / 2);
     center = 500 - widthBase / 2 + Math.floor(Math.random() * widthBase / 2);
     this.example.push({
