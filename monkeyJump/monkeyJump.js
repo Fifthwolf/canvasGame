@@ -185,26 +185,32 @@ function Monkey() {
 
 function Roof() {
   this.example = [];
+  this.position = [
+    [660, 350],
+    [660, 415],
+    [800, 245]
+  ]
 
   this.init = function() {
     this.example.push({
       width: 160,
       center: 150,
       height: 50,
-      type: 0
+      type: Math.floor(Math.random() * 100) % 3
     });
     this.create();
   }
   this.create = function() {
-    var widthBase, width, center;
+    var widthBase, width, center, type;
     widthBase = Math.max(160 - data.element.information.score * 4, 30);
     width = widthBase + Math.floor(Math.random() * widthBase / 2);
     center = 500 - widthBase / 2 + Math.floor(Math.random() * widthBase / 2);
+    type = Math.floor(Math.random() * 100) % 3;
     this.example.push({
       width: width,
       center: center,
       height: 0,
-      type: 0
+      type: type
     });
     this.example[this.example.length - 2].center = 150;
     this.up(this.example[this.example.length - 1]);
@@ -236,9 +242,12 @@ function Roof() {
   this.draw = function(cxt) {
     cxt.save();
     for (var i = 0, len = this.example.length; i < len; i++) {
+      var example = this.example[i];
+      position = this.position[example.type];
       cxt.beginPath();
       cxt.fillStyle = '#00f';
-      cxt.rect(this.example[i].center - this.example[i].width / 2, 480 - this.example[i].height, this.example[i].width, 50);
+      cxt.drawImage(data.image, position[0], position[1], 200, 50,
+        example.center - example.width / 2, 480 - example.height, example.width, 50);
       cxt.fill();
     }
     cxt.restore();
