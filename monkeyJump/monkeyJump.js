@@ -7,6 +7,7 @@ var data = {
     },
     mobile: null,
     cxt: null,
+    start: false,
     fail: false,
     scale: 1,
     top: 0,
@@ -18,6 +19,7 @@ var data = {
     up: 0,
   },
   element: {
+    start: null,
     monkey: null,
     roof: null,
     sun: null,
@@ -59,10 +61,16 @@ function imageLoaded() {
 }
 
 function game() {
-  init();
+  data.element.start = new StartText();
+  if (data.system.mobile) {
+    canvas.addEventListener('touchend', init, false);
+  } else {
+    canvas.addEventListener('click', init, false);
+  }
 }
 
 function init() {
+  data.system.start = true;
   canvas.removeEventListener('click', init);
   canvas.removeEventListener('touchend', init);
   var ele = data.element;
@@ -96,13 +104,17 @@ function drawImage() {
   var cxt = data.system.cxt,
     ele = data.element;
   drawBackground(cxt);
-  ele.monkey.draw(cxt);
-  ele.groove.draw(cxt);
-  ele.roof.draw(cxt);
-  ele.sun.draw(cxt);
-  ele.information.draw(cxt);
-  ele.cloud1.draw(cxt);
-  ele.cloud2.draw(cxt);
+  if (data.system.start) {
+    ele.monkey.draw(cxt);
+    ele.groove.draw(cxt);
+    ele.roof.draw(cxt);
+    ele.sun.draw(cxt);
+    ele.information.draw(cxt);
+    ele.cloud1.draw(cxt);
+    ele.cloud2.draw(cxt);
+  } else {
+    ele.start.draw(cxt);
+  }
   if (data.system.fail) {
     ele.over.draw(cxt);
   }
@@ -110,6 +122,47 @@ function drawImage() {
 
 function drawBackground(cxt) {
   cxt.drawImage(data.image, 0, 0, 640, 480, 0, 0, 640, 480);
+}
+
+function StartText() {
+  this.x = 640;
+  this.y = 480;
+  this.testAlpha = 1;
+  this.textState = 0; //0减弱，1增强
+  this.position = [420, 490];
+
+  this.testAlpahChange = function() {
+    if (this.textState) {
+      this.testAlpha += data.system.time.delta * 0.005;
+      if (this.testAlpha > 1) {
+        this.textState = 0;
+      }
+    } else {
+      this.testAlpha -= data.system.time.delta * 0.001;
+      if (this.testAlpha < 0) {
+        this.textState = 1;
+      }
+    }
+  }
+  this.draw = function(cxt) {
+    this.testAlpahChange();
+    cxt.save();
+    cxt.translate(this.x / 2, this.y / 2);
+    cxt.drawImage(data.image, this.position[0], this.position[1], 500, 377, -250, -189, 500, 377);
+    cxt.restore();
+
+    cxt.save();
+    cxt.beginPath();
+    cxt.font = "20px Microsoft YaHei";
+    cxt.textAlign = "left";
+    cxt.fillStyle = 'rgba(255, 255, 255,' + this.testAlpha + ')';
+    cxt.shadowColor = '#000';
+    cxt.shadowOffsetX = 1;
+    cxt.shadowOffsetY = 1;
+    cxt.shadowBlur = 1;
+    cxt.fillText("点击以开始游戏", 50, 350);
+    cxt.restore();
+  }
 }
 
 function Monkey() {
