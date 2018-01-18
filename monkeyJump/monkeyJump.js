@@ -125,9 +125,10 @@ function drawBackground(cxt) {
 }
 
 function StartText() {
-  this.x = 640;
-  this.y = 480;
+  this.x = 320;
+  this.y = 240;
   this.testAlpha = 1;
+  this.picState = 1; //0下降，1上升
   this.textState = 0; //0减弱，1增强
   this.position = [420, 490];
 
@@ -144,10 +145,24 @@ function StartText() {
       }
     }
   }
+  this.startPicFloat = function() {
+    if (this.picState) {
+      this.y += data.system.time.delta * 0.02;
+      if (this.y > 260) {
+        this.picState = 0;
+      }
+    } else {
+      this.y -= data.system.time.delta * 0.02;
+      if (this.y < 220) {
+        this.picState = 1;
+      }
+    }
+  }
   this.draw = function(cxt) {
     this.testAlpahChange();
+    this.startPicFloat();
     cxt.save();
-    cxt.translate(this.x / 2, this.y / 2);
+    cxt.translate(this.x, this.y);
     cxt.drawImage(data.image, this.position[0], this.position[1], 500, 377, -250, -189, 500, 377);
     cxt.restore();
 
