@@ -131,10 +131,40 @@ function StartText() {
 function Aircraft() {
   this.x;
   this.y;
+  this.width;
+  this.height;
   this.health;
 
-  this.init = function() {}
+  this.init = function() {
+    this.x = 200;
+    this.y = 550;
+  }
   this.draw = function(cxt) {
+    cxt.save();
+    cxt.translate(this.x / 2, this.y / 2); //坐标原点位于猴子正中下方
+    cxt.scale(this.scale, this.scale);
+    //cxt.drawImage(data.image, this.x, this.y, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+    cxt.restore();
+  }
+}
+
+function Bullet() {
+  this.bullet = [];
+
+  this.init = function() {
+    this.bullet = [];
+  }
+  this.create = function(x, y, vy, attack, radius, type) {
+    this.bullet.push({
+      x: x,
+      y: y,
+      vy: vy,
+      attack: attack,
+      radius: radius,
+      type: type
+    });
+  }
+  this.draw = function() {
 
   }
 }
