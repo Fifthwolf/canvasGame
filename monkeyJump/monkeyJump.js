@@ -256,7 +256,9 @@ function Roof() {
   this.position = [
     [660, 350],
     [660, 415],
-    [800, 245]
+    [800, 245],
+    [10, 590],
+    [10, 660]
   ]
 
   this.init = function() {
@@ -264,7 +266,7 @@ function Roof() {
       width: 160,
       center: 150,
       height: 50,
-      type: Math.floor(Math.random() * 100) % 3
+      type: Math.floor(Math.random() * 100) % 5
     });
     this.create();
   }
@@ -273,7 +275,7 @@ function Roof() {
     widthBase = Math.max(160 - data.element.information.score * 4, 30);
     width = widthBase + Math.floor(Math.random() * widthBase / 2);
     center = 500 - widthBase / 2 + Math.floor(Math.random() * widthBase / 2);
-    type = Math.floor(Math.random() * 100) % 3;
+    type = Math.floor(Math.random() * 100) % 5;
     this.example.push({
       width: width,
       center: center,
