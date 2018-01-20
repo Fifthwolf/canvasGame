@@ -7,13 +7,14 @@ var data = {
     },
     mobile: null,
     cxt: null,
+    start: false,
     scale: 1,
     top: 0,
     width: 400,
     height: 600
   },
   element: {
-
+    startText: null,
   },
 }
 
@@ -29,7 +30,7 @@ window.onload = function() {
 
 function imageLoaded() {
   var image = new Image();
-  image.src = 'monkeyJump.png';
+  image.src = 'aircraftWar.png';
   image.onload = function() {
     loading.style.display = 'none';
     _setCanvasProperty();
@@ -52,6 +53,7 @@ function game() {
 
 function init() {
   var ele = data.element;
+  ele.startText = new StartText();
 }
 
 function gameloop() {
@@ -70,6 +72,9 @@ function drawImage() {
   var cxt = data.system.cxt,
     ele = data.element;
   drawBackground(cxt);
+  if (!data.system.start) {
+    ele.startText.draw(cxt);
+  }
 }
 
 function StartText() {
@@ -117,13 +122,13 @@ function StartText() {
     cxt.save();
     cxt.beginPath();
     cxt.font = "20px Microsoft YaHei";
-    cxt.textAlign = "left";
+    cxt.textAlign = "center";
     cxt.fillStyle = 'rgba(255, 255, 255,' + this.testAlpha + ')';
     cxt.shadowColor = '#000';
     cxt.shadowOffsetX = 1;
     cxt.shadowOffsetY = 1;
     cxt.shadowBlur = 1;
-    cxt.fillText("点击以开始游戏", 50, 350);
+    cxt.fillText("点击以开始游戏", 200, 500);
     cxt.restore();
   }
 }
@@ -141,7 +146,7 @@ function Aircraft() {
   }
   this.draw = function(cxt) {
     cxt.save();
-    cxt.translate(this.x / 2, this.y / 2); //坐标原点位于猴子正中下方
+    cxt.translate(this.x / 2, this.y / 2); //坐标原点位于飞机中心
     cxt.scale(this.scale, this.scale);
     //cxt.drawImage(data.image, this.x, this.y, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
     cxt.restore();
@@ -169,6 +174,14 @@ function Bullet() {
   }
 }
 
-function drawBackground(cxt) {
+function Star() {
 
+}
+
+function drawBackground(cxt) {
+  var gr = cxt.createRadialGradient(data.system.width / 2, 0, 0, data.system.width / 2, 0, data.system.height * 1.2);
+  gr.addColorStop(0, '#084097');
+  gr.addColorStop(0.8, '#120241');
+  cxt.fillStyle = gr;
+  cxt.fillRect(0, 0, data.system.width, data.system.height);
 }
