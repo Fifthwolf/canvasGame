@@ -78,12 +78,12 @@ function drawImage() {
 }
 
 function StartText() {
-  this.x = 320;
-  this.y = 240;
+  this.x = 200;
+  this.y = 200;
   this.testAlpha = 1;
   this.picState = 1; //0下降，1上升
   this.textState = 0; //0减弱，1增强
-  this.position = [420, 490];
+  this.position = [0, 0];
 
   this.testAlpahChange = function() {
     if (this.textState) {
@@ -101,12 +101,12 @@ function StartText() {
   this.startPicFloat = function() {
     if (this.picState) {
       this.y += data.system.time.delta * 0.02;
-      if (this.y > 260) {
+      if (this.y > 225) {
         this.picState = 0;
       }
     } else {
       this.y -= data.system.time.delta * 0.02;
-      if (this.y < 220) {
+      if (this.y < 175) {
         this.picState = 1;
       }
     }
@@ -116,7 +116,7 @@ function StartText() {
     this.startPicFloat();
     cxt.save();
     cxt.translate(this.x, this.y);
-    cxt.drawImage(data.image, this.position[0], this.position[1], 500, 377, -250, -189, 500, 377);
+    cxt.drawImage(data.image, this.position[0], this.position[1], 400, 200, -200, -100, 400, 200);
     cxt.restore();
 
     cxt.save();
