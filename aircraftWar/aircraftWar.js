@@ -16,6 +16,7 @@ var data = {
   },
   element: {
     startText: null,
+    millenniumFalcon: null,
   },
 }
 
@@ -60,6 +61,8 @@ function game() {
 function init() {
   data.system.start = true;
   var ele = data.element;
+  ele.millenniumFalcon = new MillenniumFalcon();
+  ele.millenniumFalcon.init();
 }
 
 function gameloop() {
@@ -78,7 +81,9 @@ function drawImage() {
   var cxt = data.system.cxt,
     ele = data.element;
   drawBackground(cxt);
-  if (!data.system.start) {
+  if (data.system.start) {
+    ele.millenniumFalcon.draw(cxt);
+  } else {
     ele.startText.draw(cxt);
   }
 }
@@ -142,19 +147,18 @@ function StartText() {
 function MillenniumFalcon() {
   this.x;
   this.y;
-  this.width;
-  this.height;
+  this.width = 80;
+  this.height = 80;
   this.health;
 
   this.init = function() {
     this.x = 200;
-    this.y = 550;
+    this.y = 500;
   }
   this.draw = function(cxt) {
     cxt.save();
-    cxt.translate(this.x / 2, this.y / 2); //坐标原点位于飞机中心
-    cxt.scale(this.scale, this.scale);
-    //cxt.drawImage(data.image, this.x, this.y, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+    cxt.translate(this.x, this.y); //坐标原点位于飞机中心
+    cxt.drawImage(data.image, 0, 200, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
     cxt.restore();
   }
 }
