@@ -8,6 +8,7 @@ var data = {
     mobile: null,
     cxt: null,
     start: false,
+    speedY: 0,
     scale: 1,
     top: 0,
     width: 400,
@@ -48,12 +49,17 @@ function imageLoaded() {
 }
 
 function game() {
-  init();
+  data.element.startText = new StartText();
+  if (data.system.mobile) {
+    canvas.addEventListener('touchend', init, false);
+  } else {
+    canvas.addEventListener('click', init, false);
+  }
 }
 
 function init() {
+  data.system.start = true;
   var ele = data.element;
-  ele.startText = new StartText();
 }
 
 function gameloop() {
@@ -133,7 +139,7 @@ function StartText() {
   }
 }
 
-function Aircraft() {
+function MillenniumFalcon() {
   this.x;
   this.y;
   this.width;
@@ -175,7 +181,25 @@ function Bullet() {
 }
 
 function Star() {
+  this.star = [];
 
+  this.init = function() {
+    this.star = [];
+  }
+  this.position = [
+    [1, 1],
+    [2, 1]
+  ]
+  this.create = function(x, y, type) {
+    this.star.push({
+      x: x,
+      y: y,
+      type: type
+    });
+  }
+  this.draw = function() {
+
+  }
 }
 
 function drawBackground(cxt) {
