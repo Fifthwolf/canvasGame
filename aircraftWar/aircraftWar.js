@@ -63,6 +63,8 @@ function init() {
   var ele = data.element;
   ele.millenniumFalcon = new MillenniumFalcon();
   ele.millenniumFalcon.init();
+  document.addEventListener('keydown', millenniumFalconMove, false);
+  document.addEventListener('keyup', millenniumFalconMoveEnd, false);
 }
 
 function gameloop() {
@@ -149,13 +151,74 @@ function MillenniumFalcon() {
   this.y;
   this.width = 80;
   this.height = 80;
+  this.direction = {
+    up: false,
+    right: false,
+    down: false,
+    left: false
+  }
   this.health;
 
   this.init = function() {
     this.x = 200;
     this.y = 500;
   }
+  this.move = function() {
+    var dir;
+    var delta = data.system.time.delta;
+
+    if (this.direction.up & this.direction.right) {
+      dir = 2;
+    } else if (this.direction.right & this.direction.down) {
+      dir = 4;
+    } else if (this.direction.down & this.direction.left) {
+      dir = 6;
+    } else if (this.direction.left & this.direction.up) {
+      dir = 8;
+    } else if (this.direction.up) {
+      dir = 1;
+    } else if (this.direction.right) {
+      dir = 3;
+    } else if (this.direction.down) {
+      dir = 5;
+    } else if (this.direction.left) {
+      dir = 7;
+    }
+
+    switch (dir) { //1向上移动，顺时针8个方位
+      case 1:
+        this.y -= delta * 0.5;
+        break;
+      case 2:
+        this.x += delta * 0.35;
+        this.y -= delta * 0.35;
+        break;
+      case 3:
+        this.x += delta * 0.5;
+        break;
+      case 4:
+        this.x += delta * 0.35;
+        this.y += delta * 0.35;
+        break;
+      case 5:
+        this.y += delta * 0.5;
+        break;
+      case 6:
+        this.x -= delta * 0.35;
+        this.y += delta * 0.35;
+        break;
+      case 7:
+        this.x -= delta * 0.5;
+        break;
+      case 8:
+        this.x -= delta * 0.35;
+        this.y -= delta * 0.35;
+        break;
+    }
+  }
   this.draw = function(cxt) {
+    this.move();
+
     cxt.save();
     cxt.translate(this.x, this.y); //坐标原点位于飞机中心
     cxt.drawImage(data.image, 0, 200, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
@@ -212,4 +275,44 @@ function drawBackground(cxt) {
   gr.addColorStop(0.8, '#120241');
   cxt.fillStyle = gr;
   cxt.fillRect(0, 0, data.system.width, data.system.height);
+}
+
+function millenniumFalconMove(event) {
+  var e = event || window.event || arguments.callee.caller.arguments[0];
+  var direction = data.element.millenniumFalcon.direction;
+
+  switch (e && e.keyCode) {
+    case 87:
+      direction.up = true;
+      break;
+    case 68:
+      direction.right = true;
+      break;
+    case 83:
+      direction.down = true;
+      break;
+    case 65:
+      direction.left = true;
+      break;
+  }
+}
+
+function millenniumFalconMoveEnd(event) {
+  var e = event || window.event || arguments.callee.caller.arguments[0];
+  var direction = data.element.millenniumFalcon.direction;
+
+  switch (e && e.keyCode) {
+    case 87:
+      direction.up = false;
+      break;
+    case 68:
+      direction.right = false;
+      break;
+    case 83:
+      direction.down = false;
+      break;
+    case 65:
+      direction.left = false;
+      break;
+  }
 }
