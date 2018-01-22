@@ -17,6 +17,7 @@ var data = {
   element: {
     startText: null,
     millenniumFalcon: null,
+    bullet: null
   },
 }
 
@@ -59,8 +60,11 @@ function game() {
 }
 
 function init() {
+  canvas.removeEventListener('click', init);
   data.system.start = true;
   var ele = data.element;
+  ele.bullet = new Bullet();
+  ele.bullet.init();
   ele.millenniumFalcon = new MillenniumFalcon();
   ele.millenniumFalcon.init();
   document.addEventListener('keydown', millenniumFalconMove, false);
@@ -84,6 +88,7 @@ function drawImage() {
     ele = data.element;
   drawBackground(cxt);
   if (data.system.start) {
+    ele.bullet.draw(cxt);
     ele.millenniumFalcon.draw(cxt);
   } else {
     ele.startText.draw(cxt);
@@ -151,17 +156,26 @@ function MillenniumFalcon() {
   this.y;
   this.width = 80;
   this.height = 80;
+  this.health;
   this.direction = {
     up: false,
     right: false,
     down: false,
     left: false
   }
-  this.health;
+  this.attack = {
+    on: false,
+    value: 1
+  }
+  this.time;
 
   this.init = function() {
+    var self = this;
     this.x = 200;
     this.y = 500;
+    this.time = setInterval(function() {
+      self.attack.on = true;
+    }, data.system.time.delta * 10);
   }
   this.move = function() {
     var dir;
@@ -218,6 +232,11 @@ function MillenniumFalcon() {
   }
   this.draw = function(cxt) {
     this.move();
+    if (this.attack.on) {
+      data.element.bullet.create(this.x - 15, this.y, -50, this.attack.value, 2, 0);
+      data.element.bullet.create(this.x + 15, this.y, -50, this.attack.value, 2, 0);
+      this.attack.on = false;
+    }
 
     cxt.save();
     cxt.translate(this.x, this.y); //坐标原点位于飞机中心
@@ -228,9 +247,14 @@ function MillenniumFalcon() {
 
 function Bullet() {
   this.bullet = [];
+  this.time;
 
   this.init = function() {
+    var self = this;
     this.bullet = [];
+    this.time = setInterval(function() {
+      self.destroy();
+    }, data.system.time.delta * 100);
   }
   this.create = function(x, y, vy, attack, radius, type) {
     this.bullet.push({
@@ -242,8 +266,28 @@ function Bullet() {
       type: type
     });
   }
-  this.draw = function() {
+  this.move = function(bullet) {
+    bullet.y += bullet.vy * data.system.time.delta * 0.01;
+  }
+  this.destroy = function() {
+    for (var i = this.bullet.length - 1; i >= 0; i--) {
+      if (this.bullet[i].y < -10 || this.bullet[i].x > 610) {
+        this.bullet.splice(i, 1);
+      }
+    }
+  }
+  this.draw = function(cxt) {
+    this.destroy();
+    for (var i = 0, len = this.bullet.length; i < len; i++) {
+      this.move(this.bullet[i]);
 
+      cxt.save();
+      cxt.beginPath();
+      cxt.fillStyle = '#fff';
+      cxt.arc(this.bullet[i].x, this.bullet[i].y, this.bullet[i].radius, 0, 2 * Math.PI);
+      cxt.fill();
+      cxt.restore();
+    }
   }
 }
 
