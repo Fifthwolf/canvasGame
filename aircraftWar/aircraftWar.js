@@ -17,7 +17,8 @@ var data = {
   element: {
     startText: null,
     millenniumFalcon: null,
-    bullet: null
+    bullet: null,
+    star: null
   },
 }
 
@@ -63,6 +64,8 @@ function init() {
   canvas.removeEventListener('click', init);
   data.system.start = true;
   var ele = data.element;
+  ele.star = new Star();
+  ele.star.init();
   ele.bullet = new Bullet();
   ele.bullet.init();
   ele.millenniumFalcon = new MillenniumFalcon();
@@ -88,8 +91,10 @@ function drawImage() {
     ele = data.element;
   drawBackground(cxt);
   if (data.system.start) {
+    ele.star.draw(cxt);
     ele.bullet.draw(cxt);
-    ele.millenniumFalcon.draw(cxt);
+    ele.millenniumFalcon.airDraw(cxt);
+    ele.millenniumFalcon.healthDraw(cxt);
   } else {
     ele.startText.draw(cxt);
   }
@@ -157,6 +162,7 @@ function MillenniumFalcon() {
   this.width = 80;
   this.height = 80;
   this.health;
+  this.maxHealth;
   this.direction = {
     up: false,
     right: false,
@@ -173,6 +179,9 @@ function MillenniumFalcon() {
     var self = this;
     this.x = 200;
     this.y = 500;
+    this.health = 10;
+    this.maxHealth = 10;
+
     this.time = setInterval(function() {
       self.attack.on = true;
     }, data.system.time.delta * 10);
@@ -230,17 +239,34 @@ function MillenniumFalcon() {
         break;
     }
   }
-  this.draw = function(cxt) {
+
+  this.airDraw = function(cxt) {
     this.move();
     if (this.attack.on) {
-      data.element.bullet.create(this.x - 15, this.y, -50, this.attack.value, 2, 0);
-      data.element.bullet.create(this.x + 15, this.y, -50, this.attack.value, 2, 0);
+      data.element.bullet.create(this.x - 15, this.y, 0, -60, this.attack.value, 2, 0);
+      data.element.bullet.create(this.x + 15, this.y, 0, -60, this.attack.value, 2, 0);
       this.attack.on = false;
     }
 
     cxt.save();
     cxt.translate(this.x, this.y); //坐标原点位于飞机中心
     cxt.drawImage(data.image, 0, 200, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+    cxt.restore();
+  }
+  this.healthDraw = function(cxt) {
+    cxt.save();
+    cxt.beginPath();
+    cxt.font = "20px Verdana";
+    cxt.textAlign = "right";
+    cxt.fillStyle = '#0f6';
+    cxt.fillText("HP", 322, 33);
+    cxt.rect(330, 15, this.health / this.maxHealth * 50, 20);
+    cxt.fill();
+    cxt.beginPath();
+    cxt.strokeStyle = '#000';
+    cxt.lineWidth = 2;
+    cxt.rect(330, 15, 50, 20);
+    cxt.stroke();
     cxt.restore();
   }
 }
@@ -256,10 +282,11 @@ function Bullet() {
       self.destroy();
     }, data.system.time.delta * 100);
   }
-  this.create = function(x, y, vy, attack, radius, type) {
+  this.create = function(x, y, vx, vy, attack, radius, type) {
     this.bullet.push({
       x: x,
       y: y,
+      vx: vx,
       vy: vy,
       attack: attack,
       radius: radius,
@@ -267,6 +294,7 @@ function Bullet() {
     });
   }
   this.move = function(bullet) {
+    bullet.x += bullet.vx * data.system.time.delta * 0.01;
     bullet.y += bullet.vy * data.system.time.delta * 0.01;
   }
   this.destroy = function() {
@@ -284,7 +312,7 @@ function Bullet() {
       cxt.save();
       cxt.beginPath();
       cxt.fillStyle = '#fff';
-      cxt.arc(this.bullet[i].x, this.bullet[i].y, this.bullet[i].radius, 0, 2 * Math.PI);
+      cxt.rect(this.bullet[i].x, this.bullet[i].y, 1, 4);
       cxt.fill();
       cxt.restore();
     }
@@ -295,21 +323,52 @@ function Star() {
   this.star = [];
 
   this.init = function() {
-    this.star = [];
+    this.star = [{
+      x: 100,
+      y: 100,
+      size: 5,
+      opacity: 0.5,
+      type: 0
+    }];
   }
   this.position = [
     [1, 1],
     [2, 1]
   ]
-  this.create = function(x, y, type) {
+  this.create = function(x, y, size, opacity, type) {
     this.star.push({
       x: x,
       y: y,
+      size: size,
+      opacity: opacity,
       type: type
     });
   }
-  this.draw = function() {
-
+  this.draw = function(cxt) {
+    for (var i = 0, len = this.star.length; i < len; i++) {
+      var size = this.star[i].size;
+      cxt.save();
+      cxt.fillStyle = 'rgba(255, 255, 255, ' + this.star[i].opacity + ')';
+      cxt.beginPath();
+      cxt.translate(this.star[i].x, this.star[i].y);
+      cxt.arc(0, 0, size, 0, 2 * Math.PI);
+      cxt.fill();
+      cxt.beginPath();
+      cxt.moveTo(-size * 3, 0);
+      cxt.lineTo(0, size);
+      cxt.lineTo(size * 3, 0);
+      cxt.lineTo(0, -size);
+      cxt.closePath();
+      cxt.fill();
+      cxt.beginPath();
+      cxt.moveTo(0, size * 3);
+      cxt.lineTo(size, 0);
+      cxt.lineTo(0, -size * 3);
+      cxt.lineTo(-size, 0);
+      cxt.closePath();
+      cxt.fill();
+      cxt.restore();
+    }
   }
 }
 
