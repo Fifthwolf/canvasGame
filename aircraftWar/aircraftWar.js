@@ -8,7 +8,7 @@ var data = {
     mobile: null,
     cxt: null,
     start: false,
-    speedY: 0,
+    speedY: 0.5,
     scale: 1,
     top: 0,
     width: 400,
@@ -20,6 +20,7 @@ var data = {
     bullet: null,
     star: null
   },
+  TIME: null
 }
 
 window.onload = function() {
@@ -70,6 +71,7 @@ function init() {
   ele.bullet.init();
   ele.millenniumFalcon = new MillenniumFalcon();
   ele.millenniumFalcon.init();
+  clearLimitsElement();
   document.addEventListener('keydown', millenniumFalconMove, false);
   document.addEventListener('keyup', millenniumFalconMoveEnd, false);
 }
@@ -273,14 +275,9 @@ function MillenniumFalcon() {
 
 function Bullet() {
   this.bullet = [];
-  this.time;
 
   this.init = function() {
-    var self = this;
     this.bullet = [];
-    this.time = setInterval(function() {
-      self.destroy();
-    }, data.system.time.delta * 100);
   }
   this.create = function(x, y, vx, vy, attack, radius, type) {
     this.bullet.push({
@@ -299,13 +296,12 @@ function Bullet() {
   }
   this.destroy = function() {
     for (var i = this.bullet.length - 1; i >= 0; i--) {
-      if (this.bullet[i].y < -10 || this.bullet[i].x > 610) {
+      if (this.bullet[i].y < -10 || this.bullet[i].y > 610) {
         this.bullet.splice(i, 1);
       }
     }
   }
   this.draw = function(cxt) {
-    this.destroy();
     for (var i = 0, len = this.bullet.length; i < len; i++) {
       this.move(this.bullet[i]);
 
@@ -321,15 +317,26 @@ function Bullet() {
 
 function Star() {
   this.star = [];
+  this.setup;
+  this.time;
 
   this.init = function() {
-    this.star = [{
-      x: 100,
-      y: 100,
-      size: 5,
-      opacity: 0.5,
-      type: 0
-    }];
+    var self = this;
+    this.star = [];
+    this.setup = false;
+
+    for (var i = 0; i < 6; i++) {
+      var x = Math.random() * 300 + 50,
+        y = Math.random() * 600,
+        size = Math.floor(Math.random() * 5 + 1),
+        opacity = Math.random() * 0.5 + 0.25,
+        type = 0;
+      this.create(x, y, size, opacity, type);
+    }
+
+    this.time = setInterval(function() {
+      self.setup = true;
+    }, data.system.time.delta * 15);
   }
   this.position = [
     [1, 1],
@@ -344,8 +351,28 @@ function Star() {
       type: type
     });
   }
+  this.move = function(star) {
+    star.y += data.system.time.delta * data.system.speedY;
+  }
+  this.destroy = function() {
+    for (var i = this.star.length - 1; i >= 0; i--) {
+      if (this.star[i].y > 620) {
+        this.star.splice(i, 1);
+      }
+    }
+  }
   this.draw = function(cxt) {
+    if (this.setup) {
+      var x = Math.random() * 300 + 50,
+        y = -Math.random() * 100,
+        size = Math.floor(Math.random() * 5 + 1),
+        opacity = Math.random() * 0.5 + 0.25,
+        type = 0;
+      this.create(x, y, size, opacity, type);
+      this.setup = false;
+    }
     for (var i = 0, len = this.star.length; i < len; i++) {
+      this.move(this.star[i]);
       var size = this.star[i].size;
       cxt.save();
       cxt.fillStyle = 'rgba(255, 255, 255, ' + this.star[i].opacity + ')';
@@ -378,6 +405,14 @@ function drawBackground(cxt) {
   gr.addColorStop(0.8, '#120241');
   cxt.fillStyle = gr;
   cxt.fillRect(0, 0, data.system.width, data.system.height);
+}
+
+function clearLimitsElement() {
+  var ele = data.element;
+  data.TIME = setInterval(function() {
+    ele.bullet.destroy();
+    ele.star.destroy();
+  }, data.system.time.delta * 100);
 }
 
 function millenniumFalconMove(event) {
