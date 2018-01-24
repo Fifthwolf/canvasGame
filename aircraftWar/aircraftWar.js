@@ -333,7 +333,6 @@ function Star() {
         type = 0;
       this.create(x, y, size, opacity, type);
     }
-
     this.time = setInterval(function() {
       self.setup = true;
     }, data.system.time.delta * 15);
@@ -352,7 +351,7 @@ function Star() {
     });
   }
   this.move = function(star) {
-    star.y += data.system.time.delta * data.system.speedY;
+    star.y += data.system.time.delta * data.system.speedY * star.size * 0.2;
   }
   this.destroy = function() {
     for (var i = this.star.length - 1; i >= 0; i--) {
@@ -365,7 +364,7 @@ function Star() {
     if (this.setup) {
       var x = Math.random() * 300 + 50,
         y = -Math.random() * 100,
-        size = Math.floor(Math.random() * 5 + 1),
+        size = Math.random() * 5 + 1,
         opacity = Math.random() * 0.5 + 0.25,
         type = 0;
       this.create(x, y, size, opacity, type);
@@ -412,7 +411,7 @@ function clearLimitsElement() {
   data.TIME = setInterval(function() {
     ele.bullet.destroy();
     ele.star.destroy();
-  }, data.system.time.delta * 100);
+  }, 5000);
 }
 
 function millenniumFalconMove(event) {
