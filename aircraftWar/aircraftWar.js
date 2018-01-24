@@ -8,7 +8,7 @@ var data = {
     mobile: null,
     cxt: null,
     start: false,
-    speedY: 0.5,
+    speedY: 0.2,
     scale: 1,
     top: 0,
     width: 400,
@@ -291,8 +291,8 @@ function HostileAirplane() {
     /* 2秒后第1波敌机 */
     setTimeout(function() {
       for (var i = 0; i < 10; i++) {
-        var x = -i * 20,
-          y = -i * 20,
+        var x = -i * 40,
+          y = -i * 40,
           vx = 10,
           vy = 5;
         self.create(x, y, vx, vy, 0, 0, 10, 100, 0);
@@ -302,11 +302,9 @@ function HostileAirplane() {
     /* 4秒后第2波敌机 */
     setTimeout(function() {
       for (var i = 0; i < 10; i++) {
-        var x = i * 20 + 400,
-          y = -i * 20,
-          vx = -10,
+        var y = -i * 40,
           vy = 5;
-        self.create(x, y, vx, vy, 0, 0, 10, 100, 0);
+        self.create(0, y, 0, vy, 0, 0, 10, 100, 1);
       }
     }, 4000);
   }
@@ -324,14 +322,24 @@ function HostileAirplane() {
     });
   }
   this.move = function(airplane) {
-    airplane.x += airplane.vx * data.system.time.delta * 0.01;
-    airplane.y += airplane.vy * data.system.time.delta * 0.01;
-    airplane.rotate += data.system.time.delta * 0.02;
+
+    switch (airplane.type) {
+      case 0:
+        airplane.x += airplane.vx * data.system.time.delta * 0.01;
+        airplane.y += airplane.vy * data.system.time.delta * 0.01;
+        airplane.rotate += data.system.time.delta * 0.02;
+        break;
+      case 1:
+        airplane.x = Math.sin(airplane.rotate * 0.1) * 150 + 200;
+        airplane.y += airplane.vy * data.system.time.delta * 0.01;
+        airplane.rotate += data.system.time.delta * 0.02;
+        break;
+    }
   }
   this.destroy = function() {
-    for (var i = this.destroy.length - 1; i >= 0; i--) {
-      if (this.destroy[i].health <= 0) {
-        this.destroy.splice(i, 1);
+    for (var i = this.airplane.length - 1; i >= 0; i--) {
+      if (this.airplane[i].health <= 0 || this.airplane[i].y > 620) {
+        this.airplane.splice(i, 1);
       }
     }
   }
