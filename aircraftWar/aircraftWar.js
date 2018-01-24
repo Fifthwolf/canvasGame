@@ -330,8 +330,9 @@ function Star() {
         y = Math.random() * 600,
         size = Math.floor(Math.random() * 5 + 1),
         opacity = Math.random() * 0.5 + 0.25,
-        type = 0;
-      this.create(x, y, size, opacity, type);
+        type = Math.floor(Math.random() * 100) % 2,
+        rotate = Math.PI / 180 * (Math.random() * 100 - 50);
+      this.create(x, y, size, opacity, type, rotate);
     }
     this.time = setInterval(function() {
       self.setup = true;
@@ -341,13 +342,14 @@ function Star() {
     [1, 1],
     [2, 1]
   ]
-  this.create = function(x, y, size, opacity, type) {
+  this.create = function(x, y, size, opacity, type, rotate) {
     this.star.push({
       x: x,
       y: y,
       size: size,
       opacity: opacity,
-      type: type
+      type: type,
+      rotate: rotate
     });
   }
   this.move = function(star) {
@@ -366,17 +368,30 @@ function Star() {
         y = -Math.random() * 100,
         size = Math.random() * 5 + 1,
         opacity = Math.random() * 0.5 + 0.25,
-        type = 0;
-      this.create(x, y, size, opacity, type);
+        type = Math.floor(Math.random() * 100) % 2,
+        rotate = Math.PI / 180 * (Math.random() * 100 - 50);
+      this.create(x, y, size, opacity, type, rotate);
       this.setup = false;
     }
     for (var i = 0, len = this.star.length; i < len; i++) {
       this.move(this.star[i]);
-      var size = this.star[i].size;
-      cxt.save();
-      cxt.fillStyle = 'rgba(255, 255, 255, ' + this.star[i].opacity + ')';
+      cxt.save();;
+      switch (this.star[i].type) {
+        case 0:
+          _type0(this.star[i]);
+          break;
+        case 1:
+          _type1(this.star[i]);
+          break;
+      }
+      cxt.restore();
+    }
+
+    function _type0(star) {
+      var size = star.size;
+      cxt.fillStyle = 'rgba(255, 255, 255, ' + star.opacity + ')';
       cxt.beginPath();
-      cxt.translate(this.star[i].x, this.star[i].y);
+      cxt.translate(star.x, star.y);
       cxt.arc(0, 0, size, 0, 2 * Math.PI);
       cxt.fill();
       cxt.beginPath();
@@ -393,6 +408,21 @@ function Star() {
       cxt.lineTo(-size, 0);
       cxt.closePath();
       cxt.fill();
+    }
+
+    function _type1(star) {
+      var size = star.size;
+      cxt.fillStyle = 'rgba(255, 255, 255, ' + star.opacity + ')';
+      cxt.strokeStyle = 'rgba(255, 255, 255, ' + star.opacity + ')';
+      cxt.beginPath();
+      cxt.translate(star.x, star.y);
+      cxt.arc(0, 0, size * 2, 0, 2 * Math.PI);
+      cxt.fill();
+      cxt.beginPath();
+      cxt.rotate(star.rotate);
+      cxt.scale(1, 0.4);
+      cxt.arc(0, 0, size * 4, 0, 2 * Math.PI);
+      cxt.stroke();
       cxt.restore();
     }
   }
