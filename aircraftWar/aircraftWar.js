@@ -100,7 +100,7 @@ function drawImage() {
     ele.bullet.draw(cxt);
     ele.hostileAirplane.draw(cxt);
     ele.millenniumFalcon.airDraw(cxt);
-    ele.millenniumFalcon.healthDraw(cxt);
+    ele.millenniumFalcon.infoDraw(cxt);
   } else {
     ele.startText.draw(cxt);
   }
@@ -167,6 +167,7 @@ function MillenniumFalcon() {
   this.y;
   this.width = 80;
   this.height = 80;
+  this.score;
   this.health;
   this.maxHealth;
   this.direction = {
@@ -185,6 +186,7 @@ function MillenniumFalcon() {
     var self = this;
     this.x = 200;
     this.y = 500;
+    this.score = 0;
     this.health = 10;
     this.maxHealth = 10;
 
@@ -259,7 +261,7 @@ function MillenniumFalcon() {
     cxt.drawImage(data.image, 0, 200, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
     cxt.restore();
   }
-  this.healthDraw = function(cxt) {
+  this.infoDraw = function(cxt) {
     cxt.save();
     cxt.beginPath();
     cxt.font = "20px Verdana";
@@ -273,6 +275,9 @@ function MillenniumFalcon() {
     cxt.lineWidth = 2;
     cxt.rect(330, 15, 50, 20);
     cxt.stroke();
+    cxt.textAlign = "left";
+    cxt.fillStyle = '#fff';
+    cxt.fillText("SCORE: " + this.score, 20, 33);
     cxt.restore();
   }
 }
@@ -281,13 +286,31 @@ function HostileAirplane() {
   this.airplane = [];
 
   this.init = function() {
-    for (var i = 0; i < 10; i++) {
-      var x = Math.random() * 400,
-        vy = Math.random() * 20;
-      this.create(x, 0, 0, vy, 0, 0, 10, 0);
-    }
+    var self = this;
+
+    /* 2秒后第1波敌机 */
+    setTimeout(function() {
+      for (var i = 0; i < 10; i++) {
+        var x = -i * 20,
+          y = -i * 20,
+          vx = 10,
+          vy = 5;
+        self.create(x, y, vx, vy, 0, 0, 10, 100, 0);
+      }
+    }, 2000);
+
+    /* 4秒后第2波敌机 */
+    setTimeout(function() {
+      for (var i = 0; i < 10; i++) {
+        var x = i * 20 + 400,
+          y = -i * 20,
+          vx = -10,
+          vy = 5;
+        self.create(x, y, vx, vy, 0, 0, 10, 100, 0);
+      }
+    }, 4000);
   }
-  this.create = function(x, y, vx, vy, rotate, attack, health, type) {
+  this.create = function(x, y, vx, vy, rotate, attack, health, score, type) {
     this.airplane.push({
       x: x,
       y: y,
@@ -296,13 +319,14 @@ function HostileAirplane() {
       rotate: rotate,
       attack: attack,
       health: health,
+      score: score,
       type: type
     });
   }
   this.move = function(airplane) {
     airplane.x += airplane.vx * data.system.time.delta * 0.01;
     airplane.y += airplane.vy * data.system.time.delta * 0.01;
-    airplane.rotate += data.system.time.delta * 0.1;
+    airplane.rotate += data.system.time.delta * 0.02;
   }
   this.destroy = function() {
     for (var i = this.destroy.length - 1; i >= 0; i--) {
