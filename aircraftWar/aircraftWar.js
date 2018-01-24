@@ -17,6 +17,7 @@ var data = {
   element: {
     startText: null,
     millenniumFalcon: null,
+    hostileAirplane: null,
     bullet: null,
     star: null
   },
@@ -69,6 +70,8 @@ function init() {
   ele.star.init();
   ele.bullet = new Bullet();
   ele.bullet.init();
+  ele.hostileAirplane = new HostileAirplane();
+  ele.hostileAirplane.init();
   ele.millenniumFalcon = new MillenniumFalcon();
   ele.millenniumFalcon.init();
   clearLimitsElement();
@@ -95,6 +98,7 @@ function drawImage() {
   if (data.system.start) {
     ele.star.draw(cxt);
     ele.bullet.draw(cxt);
+    ele.hostileAirplane.draw(cxt);
     ele.millenniumFalcon.airDraw(cxt);
     ele.millenniumFalcon.healthDraw(cxt);
   } else {
@@ -270,6 +274,52 @@ function MillenniumFalcon() {
     cxt.rect(330, 15, 50, 20);
     cxt.stroke();
     cxt.restore();
+  }
+}
+
+function HostileAirplane() {
+  this.airplane = [];
+
+  this.init = function() {
+    for (var i = 0; i < 10; i++) {
+      var x = Math.random() * 400,
+        vy = Math.random() * 20;
+      this.create(x, 0, 0, vy, 0, 0, 10, 0);
+    }
+  }
+  this.create = function(x, y, vx, vy, rotate, attack, health, type) {
+    this.airplane.push({
+      x: x,
+      y: y,
+      vx: vx,
+      vy: vy,
+      rotate: rotate,
+      attack: attack,
+      health: health,
+      type: type
+    });
+  }
+  this.move = function(airplane) {
+    airplane.x += airplane.vx * data.system.time.delta * 0.01;
+    airplane.y += airplane.vy * data.system.time.delta * 0.01;
+    airplane.rotate += data.system.time.delta * 0.1;
+  }
+  this.destroy = function() {
+    for (var i = this.destroy.length - 1; i >= 0; i--) {
+      if (this.destroy[i].health <= 0) {
+        this.destroy.splice(i, 1);
+      }
+    }
+  }
+  this.draw = function(cxt) {
+    for (var i = 0, len = this.airplane.length; i < len; i++) {
+      this.move(this.airplane[i]);
+      cxt.save();
+      cxt.translate(this.airplane[i].x, this.airplane[i].y); //坐标原点位于飞机中心
+      cxt.rotate(this.airplane[i].rotate * Math.PI / 180);
+      cxt.drawImage(data.image, 100, 200, 60, 60, -30, -30, 40, 40);
+      cxt.restore();
+    }
   }
 }
 
