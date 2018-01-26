@@ -89,6 +89,9 @@ function gameloop() {
     time.delta = 30;
   }
   drawImage();
+  if (data.system.start) {
+    killHostileAirplane();
+  }
 }
 
 function drawImage() {
@@ -109,20 +112,20 @@ function drawImage() {
 function StartText() {
   this.x = 200;
   this.y = 200;
-  this.testAlpha = 1;
+  this.textAlpha = 1;
   this.picState = 1; //0下降，1上升
   this.textState = 0; //0减弱，1增强
   this.position = [0, 0];
 
-  this.testAlpahChange = function() {
+  this.textAlpahChange = function() {
     if (this.textState) {
-      this.testAlpha += data.system.time.delta * 0.005;
-      if (this.testAlpha > 1) {
+      this.textAlpha += data.system.time.delta * 0.005;
+      if (this.textAlpha > 1) {
         this.textState = 0;
       }
     } else {
-      this.testAlpha -= data.system.time.delta * 0.001;
-      if (this.testAlpha < 0) {
+      this.textAlpha -= data.system.time.delta * 0.001;
+      if (this.textAlpha < 0) {
         this.textState = 1;
       }
     }
@@ -141,7 +144,7 @@ function StartText() {
     }
   }
   this.draw = function(cxt) {
-    this.testAlpahChange();
+    this.textAlpahChange();
     this.startPicFloat();
     cxt.save();
     cxt.translate(this.x, this.y);
@@ -152,7 +155,7 @@ function StartText() {
     cxt.beginPath();
     cxt.font = "20px Microsoft YaHei";
     cxt.textAlign = "center";
-    cxt.fillStyle = 'rgba(255, 255, 255,' + this.testAlpha + ')';
+    cxt.fillStyle = 'rgba(255, 255, 255,' + this.textAlpha + ')';
     cxt.shadowColor = '#000';
     cxt.shadowOffsetX = 1;
     cxt.shadowOffsetY = 1;
@@ -189,6 +192,10 @@ function MillenniumFalcon() {
     this.score = 0;
     this.health = 10;
     this.maxHealth = 10;
+    this.attack = {
+      on: false,
+      value: 1
+    };
 
     this.time = setInterval(function() {
       self.attack.on = true;
@@ -267,7 +274,7 @@ function HostileAirplane() {
           y = -i * 40,
           vx = 10,
           vy = 5;
-        self.create(x, y, vx, vy, 0, 0, 10, 100, 0);
+        self.create(x, y, vx, vy, 20, 0, 0, 3, 100, 0);
       }
     }, 2000);
 
@@ -276,16 +283,17 @@ function HostileAirplane() {
       for (var i = 0; i < 10; i++) {
         var y = -i * 40,
           vy = 5;
-        self.create(0, y, 0, vy, 0, 0, 10, 100, 1);
+        self.create(0, y, 0, vy, 20, 0, 0, 3, 100, 1);
       }
     }, 4000);
   }
-  this.create = function(x, y, vx, vy, rotate, attack, health, score, type) {
+  this.create = function(x, y, vx, vy, radius, rotate, attack, health, score, type) {
     this.airplane.push({
       x: x,
       y: y,
       vx: vx,
       vy: vy,
+      radius: radius,
       rotate: rotate,
       attack: attack,
       health: health,
@@ -294,7 +302,6 @@ function HostileAirplane() {
     });
   }
   this.move = function(airplane) {
-
     switch (airplane.type) {
       case 0:
         airplane.x += airplane.vx * data.system.time.delta * 0.01;
@@ -488,6 +495,34 @@ function drawBackground(cxt) {
   gr.addColorStop(0.8, '#120241');
   cxt.fillStyle = gr;
   cxt.fillRect(0, 0, data.system.width, data.system.height);
+}
+
+function killHostileAirplane() {
+  var ele = data.element,
+    falcon = ele.millenniumFalcon,
+    air = ele.hostileAirplane.airplane,
+    bullet = ele.bullet.bullet;
+
+  for (var i = bullet.length - 1; i >= 0; i--) {
+    if (bullet[i].y < 0) {
+      continue;
+    }
+    for (var j = air.length - 1; j >= 0; j--) {
+      if (_distance(bullet[i].x, bullet[i].y, air[j].x, air[j].y, air[j].radius)) {
+        air[j].health -= bullet[i].attack;
+        if (air[j].health <= 0) {
+          falcon.score += air[j].score;
+          air.splice(j, 1);
+        }
+        bullet.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  function _distance(x1, y1, x2, y2, radius) {
+    return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) < radius * radius;
+  }
 }
 
 function clearLimitsElement() {
