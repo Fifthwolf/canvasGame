@@ -175,25 +175,58 @@ function Blast() {
   this.init = function() {
     this.blast = [];
   }
-  this.create = function(x, y) {
+  this.create = function(x, y, maxR) {
     this.blast.push({
       x: x,
       y: y,
-      r: 0,
+      maxR: maxR,
+      alpha: 0,
+      scale: 0,
       state: 0
     });
   }
-  this.grow = function(blast) {
-
+  this.grow = function(blast, i) {
+    var delta = data.system.time.delta;
+    switch (blast.state) {
+      case 0:
+        blast.scale += delta * 0.015;
+        blast.alpha = Math.min(1, blast.alpha += delta * 0.02);
+        if (blast.scale > 1) {
+          blast.state = 1;
+        }
+        break;
+      case 1:
+        blast.scale += delta * 0.005;
+        blast.alpha -= delta * 0.005;
+        if (blast.alpha < 0) {
+          blast.alpha = 0;
+          blast.state = 2;
+        }
+        break;
+      case 2:
+        this.destroy(i);
+        break;
+    }
   }
   this.destroy = function(index) {
-
+    this.blast.splice(index, 1);
   }
   this.draw = function(cxt) {
     for (var i = this.blast.length - 1; i >= 0; i--) {
-      this.grow(this.blast[i]);
       cxt.save();
-      cxt.stroke();
+      cxt.translate(this.blast[i].x, this.blast[i].y);
+      cxt.scale(this.blast[i].scale, this.blast[i].scale);
+      var gr = cxt.createRadialGradient(0, 0, this.blast[i].maxR / 3, 0, 0, this.blast[i].maxR);
+      gr.addColorStop(0, 'rgba(255, 255, 255, ' + this.blast[i].alpha + ')');
+      gr.addColorStop(0.7, 'rgba(255, 128, 0, ' + this.blast[i].alpha + ')');
+      gr.addColorStop(1, 'rgba(255, 0, 0, ' + this.blast[i].alpha + ')');
+      cxt.fillStyle = gr;
+      cxt.beginPath();
+      cxt.arc(0, 0, this.blast[i].maxR, 0, Math.PI * 2);
+      cxt.closePath();
+      cxt.fill();
+      cxt.restore();
+      this.grow(this.blast[i], i);
     }
   }
 }
@@ -307,7 +340,7 @@ function HostileAirplane() {
           y = -i * 40,
           vx = 10,
           vy = 5;
-        self.create(x, y, vx, vy, 20, 0, 0, 3, 100, 0);
+        self.create(x, y, vx, vy, 20, 0, 0, 1, 100, 0);
       }
     }, 2000);
 
@@ -316,7 +349,7 @@ function HostileAirplane() {
       for (var i = 0; i < 10; i++) {
         var y = -i * 40,
           vy = 5;
-        self.create(0, y, 0, vy, 20, 0, 0, 3, 100, 1);
+        self.create(0, y, 0, vy, 20, 0, 0, 1, 100, 1);
       }
     }, 4000);
   }
@@ -532,6 +565,7 @@ function drawBackground(cxt) {
 
 function killHostileAirplane() {
   var ele = data.element,
+    blast = ele.blast,
     falcon = ele.millenniumFalcon,
     air = ele.hostileAirplane.airplane,
     bullet = ele.bullet.bullet;
@@ -545,6 +579,7 @@ function killHostileAirplane() {
         air[j].health -= bullet[i].attack;
         if (air[j].health <= 0) {
           falcon.score += air[j].score;
+          blast.create(air[j].x, air[j].y, 25);
           air.splice(j, 1);
         }
         bullet.splice(i, 1);
