@@ -195,57 +195,29 @@ function MillenniumFalcon() {
     }, data.system.time.delta * 10);
   }
   this.move = function() {
-    var dir;
     var delta = data.system.time.delta;
 
-    if (this.direction.up & this.direction.right) {
-      dir = 2;
-    } else if (this.direction.right & this.direction.down) {
-      dir = 4;
-    } else if (this.direction.down & this.direction.left) {
-      dir = 6;
-    } else if (this.direction.left & this.direction.up) {
-      dir = 8;
-    } else if (this.direction.up) {
-      dir = 1;
-    } else if (this.direction.right) {
-      dir = 3;
-    } else if (this.direction.down) {
-      dir = 5;
-    } else if (this.direction.left) {
-      dir = 7;
+    if ((this.direction.up && this.direction.right) ||
+      (this.direction.right && this.direction.down) ||
+      (this.direction.down && this.direction.left) ||
+      (this.direction.left && this.direction.up)) {
+      delta *= 0.7;
+    }
+    if (this.direction.up) {
+      this.y -= 0.5 * delta;
+    }
+    if (this.direction.right) {
+      this.x += 0.5 * delta;
+    }
+    if (this.direction.down) {
+      this.y += 0.5 * delta;
+    }
+    if (this.direction.left) {
+      this.x -= 0.5 * delta;
     }
 
-    switch (dir) { //1向上移动，顺时针8个方位
-      case 1:
-        this.y -= delta * 0.5;
-        break;
-      case 2:
-        this.x += delta * 0.35;
-        this.y -= delta * 0.35;
-        break;
-      case 3:
-        this.x += delta * 0.5;
-        break;
-      case 4:
-        this.x += delta * 0.35;
-        this.y += delta * 0.35;
-        break;
-      case 5:
-        this.y += delta * 0.5;
-        break;
-      case 6:
-        this.x -= delta * 0.35;
-        this.y += delta * 0.35;
-        break;
-      case 7:
-        this.x -= delta * 0.5;
-        break;
-      case 8:
-        this.x -= delta * 0.35;
-        this.y -= delta * 0.35;
-        break;
-    }
+    this.x = Math.max(0, Math.min(400, this.x));
+    this.y = Math.max(0, Math.min(600, this.y));
   }
 
   this.airDraw = function(cxt) {
