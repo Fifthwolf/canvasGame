@@ -16,6 +16,7 @@ var data = {
   },
   element: {
     startText: null,
+    blast: null,
     millenniumFalcon: null,
     hostileAirplane: null,
     bullet: null,
@@ -68,6 +69,8 @@ function init() {
   var ele = data.element;
   ele.star = new Star();
   ele.star.init();
+  ele.blast = new Blast();
+  ele.blast.init();
   ele.bullet = new Bullet();
   ele.bullet.init();
   ele.hostileAirplane = new HostileAirplane();
@@ -104,6 +107,7 @@ function drawImage() {
     ele.hostileAirplane.draw(cxt);
     ele.millenniumFalcon.airDraw(cxt);
     ele.millenniumFalcon.infoDraw(cxt);
+    ele.blast.draw(cxt);
   } else {
     ele.startText.draw(cxt);
   }
@@ -162,6 +166,35 @@ function StartText() {
     cxt.shadowBlur = 1;
     cxt.fillText("点击以开始游戏", 200, 500);
     cxt.restore();
+  }
+}
+
+function Blast() {
+  this.blast = [];
+
+  this.init = function() {
+    this.blast = [];
+  }
+  this.create = function(x, y) {
+    this.blast.push({
+      x: x,
+      y: y,
+      r: 0,
+      state: 0
+    });
+  }
+  this.grow = function(blast) {
+
+  }
+  this.destroy = function(index) {
+
+  }
+  this.draw = function(cxt) {
+    for (var i = this.blast.length - 1; i >= 0; i--) {
+      this.grow(this.blast[i]);
+      cxt.save();
+      cxt.stroke();
+    }
   }
 }
 
@@ -390,7 +423,7 @@ function Star() {
       var x = Math.random() * 300 + 50,
         y = Math.random() * 600,
         size = Math.floor(Math.random() * 5 + 1),
-        opacity = Math.random() * 0.5 + 0.25,
+        opacity = Math.random() * 0.25,
         type = Math.floor(Math.random() * 100) % 2,
         rotate = Math.PI / 180 * (Math.random() * 100 - 50);
       this.create(x, y, size, opacity, type, rotate);
@@ -428,7 +461,7 @@ function Star() {
       var x = Math.random() * 300 + 50,
         y = -Math.random() * 100,
         size = Math.random() * 5 + 1,
-        opacity = Math.random() * 0.5 + 0.25,
+        opacity = Math.random() * 0.25,
         type = Math.floor(Math.random() * 100) % 2,
         rotate = Math.PI / 180 * (Math.random() * 100 - 50);
       this.create(x, y, size, opacity, type, rotate);
