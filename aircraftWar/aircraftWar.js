@@ -334,24 +334,29 @@ function HostileAirplane() {
     var self = this;
 
     /* 1秒后第1波敌机 */
-    setTimeout(function() {
-      var num = 10;
-      _createSin(num, 5, 0, 0, 2, 10);
-    }, 1000);
+    createAir(1000, 10, 0);
+    createAir(1000, 10, 1);
 
-    /* 1秒后第1波敌机 */
-    setTimeout(function() {
-      var num = 10;
-      _createSin(num, 5, 720, 0, 2, 10);
-    }, 1000);
+    function createAir(time, num, type) {
+      setTimeout(function() {
+        switch (type) {
+          case 0:
+            _createSin(num, 5, 0, 1, 2, 10);
+            break;
+          case 1:
+            _createSin(num, 5, 720, 1, 2, 10);
+            break;
+        }
+      }, time);
 
-    function _createSin(num, vy, rotate, attack, health, score) {
-      self.create(0, -40, 0, vy, 20, rotate, attack, health, score, 1);
-      if (num > 0) {
-        num--;
-        setTimeout(function() {
-          _createSin(num, vy, rotate, attack, health, score);
-        }, 200);
+      function _createSin(num, vy, rotate, attack, health, score) {
+        self.create(0, -40, 0, vy, 20, rotate, attack, health, score, 1);
+        if (num > 0) {
+          num--;
+          setTimeout(function() {
+            _createSin(num, vy, rotate, attack, health, score);
+          }, 200);
+        }
       }
     }
   }
