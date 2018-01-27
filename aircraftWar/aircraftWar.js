@@ -333,25 +333,27 @@ function HostileAirplane() {
   this.init = function() {
     var self = this;
 
-    /* 2秒后第1波敌机 */
+    /* 1秒后第1波敌机 */
     setTimeout(function() {
-      for (var i = 0; i < 10; i++) {
-        var x = -i * 40,
-          y = -i * 40,
-          vx = 10,
-          vy = 5;
-        self.create(x, y, vx, vy, 20, 0, 0, 1, 100, 0);
-      }
-    }, 2000);
+      var num = 10;
+      _createSin(num, 5, 0, 0, 2, 10);
+    }, 1000);
 
-    /* 4秒后第2波敌机 */
+    /* 1秒后第1波敌机 */
     setTimeout(function() {
-      for (var i = 0; i < 10; i++) {
-        var y = -i * 40,
-          vy = 5;
-        self.create(0, y, 0, vy, 20, 0, 0, 1, 100, 1);
+      var num = 10;
+      _createSin(num, 5, 720, 0, 2, 10);
+    }, 1000);
+
+    function _createSin(num, vy, rotate, attack, health, score) {
+      self.create(0, -40, 0, vy, 20, rotate, attack, health, score, 1);
+      if (num > 0) {
+        num--;
+        setTimeout(function() {
+          _createSin(num, vy, rotate, attack, health, score);
+        }, 200);
       }
-    }, 4000);
+    }
   }
   this.create = function(x, y, vx, vy, radius, rotate, attack, health, score, type) {
     this.airplane.push({
