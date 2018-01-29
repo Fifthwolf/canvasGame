@@ -298,6 +298,21 @@ function MillenniumFalcon() {
     this.x = Math.max(0, Math.min(400, this.x));
     this.y = Math.max(0, Math.min(600, this.y));
   }
+  this.die = function() {
+    this.radius = 0;
+    this.width = 0;
+    this.height = 0;
+    this.health = 0;
+    this.direction = {
+      up: false,
+      right: false,
+      down: false,
+      left: false
+    }
+    clearInterval(this.time);
+    document.removeEventListener('keydown', millenniumFalconMove);
+    document.removeEventListener('keyup', millenniumFalconMoveEnd);
+  }
 
   this.airDraw = function(cxt) {
     this.move();
@@ -351,16 +366,16 @@ function HostileAirplane() {
       setTimeout(function() {
         switch (type) {
           case 0:
-            _createY(num, 100, 1.5, 5, 0, 1, 2, 10);
+            _createY(num, 100, 1.5, 5, 0, 1, 5, 10);
             break;
           case 1:
-            _createY(num, 300, -1.5, 5, 0, 1, 2, 10);
+            _createY(num, 300, -1.5, 5, 0, 1, 5, 10);
             break;
           case 2:
-            _createSin(num, 5, 0, 1, 2, 10);
+            _createSin(num, 5, 0, 1, 5, 10);
             break;
           case 3:
-            _createSin(num, 5, 720, 1, 2, 10);
+            _createSin(num, 5, 720, 1, 5, 10);
             break;
         }
       }, time);
@@ -610,6 +625,7 @@ function killHostileAirplane() {
     for (var j = air.length - 1; j >= 0; j--) {
       if (_distance(bullet[i].x, bullet[i].y, air[j].x, air[j].y, air[j].radius)) {
         air[j].health -= bullet[i].attack;
+        blast.create(bullet[i].x, bullet[i].y, 5);
         if (air[j].health <= 0) {
           falcon.score += air[j].score;
           blast.create(air[j].x, air[j].y, 25);
@@ -642,6 +658,7 @@ function hurtMillenniumFalcon() {
         air.splice(i, 1);
       }
       if (falcon.health <= 0) {
+        falcon.die();
         blast.create(falcon.x, falcon.y, 50);
         gameover();
       }
