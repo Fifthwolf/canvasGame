@@ -317,9 +317,18 @@ function MillenniumFalcon() {
     this.y = Math.max(0, Math.min(600, this.y));
   }
   this.moveInMobile = function(targetX, targetY) {
-    var delta = data.system.time.delta;
-    this.x += (targetX - this.x) * delta * 0.005;
-    this.y += (targetY - this.y) * delta * 0.005;
+    if (Math.abs(targetX - this.x) < 10 && Math.abs(targetY - this.y) < 10) {
+      return;
+    }
+
+    var delta = data.system.time.delta,
+      ratio = (targetX - this.x) / (targetY - this.y),
+      square = Math.sqrt((targetX - this.x) * (targetX - this.x) + (targetY - this.y) * (targetY - this.y)),
+      vx = (targetX - this.x) / square,
+      vy = (targetY - this.y) / square;
+
+    this.x += vx * delta * 0.5;
+    this.y += vy * delta * 0.5;
   }
   this.die = function() {
     this.radius = 0;
@@ -746,17 +755,19 @@ function millenniumFalconMoveEnd(event) {
 }
 
 function millenniumFalconMoveInMobile(e) {
+  e.preventDefault();
   var left = canvas.getBoundingClientRect().left,
     top = canvas.getBoundingClientRect().top,
     cursorX = (e.touches[0].pageX - left) / data.system.scale,
     cursorY = (e.touches[0].pageY - top) / data.system.scale;
   var falcon = data.element.millenniumFalcon;
   falcon.targetInMobile.on = true;
-  falcon.targetInMobile.x = cursorX;
-  falcon.targetInMobile.y = cursorY;
+  falcon.targetInMobile.x = parseInt(cursorX);
+  falcon.targetInMobile.y = parseInt(cursorY);
 }
 
 function millenniumFalconMoveInMobileEnd(e) {
+  e.preventDefault();
   var falcon = data.element.millenniumFalcon;
   falcon.targetInMobile.on = false;
 }
