@@ -94,7 +94,12 @@ function gameloop() {
   drawImage();
   if (data.system.start) {
     killHostileAirplane();
+    hurtMillenniumFalcon();
   }
+}
+
+function gameover() {
+  console.log('over');
 }
 
 function drawImage() {
@@ -236,6 +241,7 @@ function MillenniumFalcon() {
   this.y;
   this.width = 80;
   this.height = 80;
+  this.radius = 40;
   this.score;
   this.health;
   this.maxHealth;
@@ -256,8 +262,8 @@ function MillenniumFalcon() {
     this.x = 200;
     this.y = 500;
     this.score = 0;
-    this.health = 10;
-    this.maxHealth = 10;
+    this.health = 20;
+    this.maxHealth = 20;
     this.attack = {
       on: false,
       value: 1
@@ -313,7 +319,7 @@ function MillenniumFalcon() {
     cxt.textAlign = "right";
     cxt.fillStyle = '#0f6';
     cxt.fillText("HP", 322, 33);
-    cxt.rect(330, 15, this.health / this.maxHealth * 50, 20);
+    cxt.rect(330, 15, Math.max(0, this.health) / this.maxHealth * 50, 20);
     cxt.fill();
     cxt.beginPath();
     cxt.strokeStyle = '#000';
@@ -616,6 +622,34 @@ function killHostileAirplane() {
   }
 
   function _distance(x1, y1, x2, y2, radius) {
+    return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) < radius * radius;
+  }
+}
+
+function hurtMillenniumFalcon() {
+  var ele = data.element,
+    blast = ele.blast,
+    falcon = ele.millenniumFalcon,
+    air = ele.hostileAirplane.airplane;
+
+  for (var i = air.length - 1; i >= 0; i--) {
+    if (_distance(falcon.x, falcon.y, falcon.radius, air[i].x, air[i].y, air[i].radius)) {
+      falcon.health -= air[i].attack;
+      air[i].health -= falcon.attack.value;
+      if (air[i].health <= 0) {
+        falcon.score += air[i].score;
+        blast.create(air[i].x, air[i].y, 25);
+        air.splice(i, 1);
+      }
+      if (falcon.health <= 0) {
+        blast.create(falcon.x, falcon.y, 50);
+        gameover();
+      }
+    }
+  }
+
+  function _distance(x1, y1, radius1, x2, y2, radius2) {
+    var radius = radius1 + radius2;
     return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) < radius * radius;
   }
 }
