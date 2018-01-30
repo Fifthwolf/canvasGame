@@ -68,6 +68,7 @@ function init() {
   canvas.removeEventListener('click', init);
   data.system.start = true;
   var ele = data.element;
+  ele.startText.firstGame = false;
   ele.star = new Star();
   ele.star.init();
   ele.blast = new Blast();
@@ -108,6 +109,12 @@ function gameloop() {
 
 function gameover() {
   console.log('over');
+  data.system.start = false;
+  if (data.system.mobile) {
+    canvas.addEventListener('touchend', init, false);
+  } else {
+    canvas.addEventListener('click', init, false);
+  }
 }
 
 function drawImage() {
@@ -130,6 +137,7 @@ function StartText() {
   this.x = 200;
   this.y = 200;
   this.textAlpha = 1;
+  this.firstGame = true;
   this.picState = 1; //0下降，1上升
   this.textState = 0; //0减弱，1增强
   this.position = [0, 0];
@@ -165,7 +173,11 @@ function StartText() {
     this.startPicFloat();
     cxt.save();
     cxt.translate(this.x, this.y);
-    cxt.drawImage(data.image, this.position[0], this.position[1], 400, 200, -200, -100, 400, 200);
+    if (this.firstGame) {
+      cxt.drawImage(data.image, this.position[0], this.position[1], 400, 200, -200, -100, 400, 200);
+    } else {
+      cxt.fillText("FAIL", 200, 200);
+    }
     cxt.restore();
 
     cxt.save();
@@ -177,7 +189,11 @@ function StartText() {
     cxt.shadowOffsetX = 1;
     cxt.shadowOffsetY = 1;
     cxt.shadowBlur = 1;
-    cxt.fillText("点击以开始游戏", 200, 500);
+    if (this.firstGame) {
+      cxt.fillText("点击以开始游戏", 200, 500);
+    } else {
+      cxt.fillText("点击重新开始游戏", 200, 500);
+    }
     cxt.restore();
   }
 }
