@@ -127,20 +127,20 @@ function drawBackground(cxt) {
 function StartText() {
   this.x = 320;
   this.y = 240;
-  this.testAlpha = 1;
+  this.textAlpha = 1;
   this.picState = 1; //0下降，1上升
   this.textState = 0; //0减弱，1增强
   this.position = [420, 490];
 
-  this.testAlpahChange = function() {
+  this.textAlphaChange = function() {
     if (this.textState) {
-      this.testAlpha += data.system.time.delta * 0.005;
-      if (this.testAlpha > 1) {
+      this.textAlpha += data.system.time.delta * 0.005;
+      if (this.textAlpha > 1) {
         this.textState = 0;
       }
     } else {
-      this.testAlpha -= data.system.time.delta * 0.001;
-      if (this.testAlpha < 0) {
+      this.textAlpha -= data.system.time.delta * 0.001;
+      if (this.textAlpha < 0) {
         this.textState = 1;
       }
     }
@@ -159,7 +159,7 @@ function StartText() {
     }
   }
   this.draw = function(cxt) {
-    this.testAlpahChange();
+    this.textAlphaChange();
     this.startPicFloat();
     cxt.save();
     cxt.translate(this.x, this.y);
@@ -170,7 +170,7 @@ function StartText() {
     cxt.beginPath();
     cxt.font = "20px Microsoft YaHei";
     cxt.textAlign = "left";
-    cxt.fillStyle = 'rgba(255, 255, 255,' + this.testAlpha + ')';
+    cxt.fillStyle = 'rgba(255, 255, 255,' + this.textAlpha + ')';
     cxt.shadowColor = '#000';
     cxt.shadowOffsetX = 1;
     cxt.shadowOffsetY = 1;
