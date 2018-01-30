@@ -108,8 +108,10 @@ function gameloop() {
 }
 
 function gameover() {
-  console.log('over');
-  data.system.start = false;
+  setTimeout(function() {
+    data.system.start = false;
+  }, 500);
+
   if (data.system.mobile) {
     canvas.addEventListener('touchend', init, false);
   } else {
@@ -140,7 +142,10 @@ function StartText() {
   this.firstGame = true;
   this.picState = 1; //0下降，1上升
   this.textState = 0; //0减弱，1增强
-  this.position = [0, 0];
+  this.position = [
+    [0, 0],
+    [0, 200]
+  ];
 
   this.textAlpahChange = function() {
     if (this.textState) {
@@ -174,9 +179,9 @@ function StartText() {
     cxt.save();
     cxt.translate(this.x, this.y);
     if (this.firstGame) {
-      cxt.drawImage(data.image, this.position[0], this.position[1], 400, 200, -200, -100, 400, 200);
+      cxt.drawImage(data.image, this.position[0][0], this.position[0][1], 400, 200, -200, -100, 400, 200);
     } else {
-      cxt.fillText("FAIL", 200, 200);
+      cxt.drawImage(data.image, this.position[1][0], this.position[1][1], 400, 200, -200, -100, 400, 200);
     }
     cxt.restore();
 
@@ -375,7 +380,7 @@ function MillenniumFalcon() {
 
     cxt.save();
     cxt.translate(this.x, this.y); //坐标原点位于飞机中心
-    cxt.drawImage(data.image, 0, 200, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+    cxt.drawImage(data.image, 0, 400, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
     cxt.restore();
   }
   this.infoDraw = function(cxt) {
@@ -493,7 +498,7 @@ function HostileAirplane() {
       cxt.save();
       cxt.translate(this.airplane[i].x, this.airplane[i].y); //坐标原点位于飞机中心
       cxt.rotate(this.airplane[i].rotate * Math.PI / 180);
-      cxt.drawImage(data.image, 100, 200, 60, 60, -30, -30, 40, 40);
+      cxt.drawImage(data.image, 100, 400, 60, 60, -30, -30, 40, 40);
       cxt.restore();
     }
   }
