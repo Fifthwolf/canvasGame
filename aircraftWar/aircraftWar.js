@@ -373,8 +373,8 @@ function MillenniumFalcon() {
       this.moveInMobile(this.targetInMobile.x, this.targetInMobile.y);
     }
     if (this.attack.on) {
-      data.element.bullet.create(this.x - 15, this.y, 0, -60, this.attack.value, 2, 0);
-      data.element.bullet.create(this.x + 15, this.y, 0, -60, this.attack.value, 2, 0);
+      data.element.bullet.create(this.x - 15, this.y, 0, -60, this.attack.value, 2, 0, true);
+      data.element.bullet.create(this.x + 15, this.y, 0, -60, this.attack.value, 2, 0, true);
       this.attack.on = false;
     }
 
@@ -510,7 +510,7 @@ function Bullet() {
   this.init = function() {
     this.bullet = [];
   }
-  this.create = function(x, y, vx, vy, attack, radius, type) {
+  this.create = function(x, y, vx, vy, attack, radius, type, own) {
     this.bullet.push({
       x: x,
       y: y,
@@ -518,7 +518,8 @@ function Bullet() {
       vy: vy,
       attack: attack,
       radius: radius,
-      type: type
+      type: type,
+      own: own
     });
   }
   this.move = function(bullet) {
@@ -675,7 +676,7 @@ function killHostileAirplane() {
     bullet = ele.bullet.bullet;
 
   for (var i = bullet.length - 1; i >= 0; i--) {
-    if (bullet[i].y < 0) {
+    if (bullet[i].y < 0 || !bullet[i].own) {
       continue;
     }
     for (var j = air.length - 1; j >= 0; j--) {
