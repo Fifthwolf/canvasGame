@@ -19,9 +19,11 @@ var data = {
     blast: null,
     millenniumFalcon: null,
     hostileAirplane: null,
+    boss: null,
     bullet: null,
     star: null
   },
+  passThrough: null,
   TIME: null
 }
 
@@ -76,9 +78,10 @@ function init() {
   ele.bullet = new Bullet();
   ele.bullet.init();
   ele.hostileAirplane = new HostileAirplane();
-  ele.hostileAirplane.init();
   ele.millenniumFalcon = new MillenniumFalcon();
   ele.millenniumFalcon.init();
+  data.passThrough = new PassThrough();
+  data.passThrough.init();
   clearLimitsElement();
   if (data.system.mobile) {
     canvas.addEventListener('touchstart', millenniumFalconMoveInMobile, false);
@@ -407,56 +410,6 @@ function MillenniumFalcon() {
 function HostileAirplane() {
   this.airplane = [];
 
-  this.init = function() {
-    var self = this;
-
-    /* 1秒后第1波敌机 */
-    createAir(1000, 10, 0);
-    createAir(1000, 10, 1);
-
-    /* 12秒后第2波敌机 */
-    createAir(12000, 10, 2);
-    createAir(12000, 10, 3);
-
-    function createAir(time, num, type) {
-      setTimeout(function() {
-        switch (type) {
-          case 0:
-            _createY(num, 100, 1.5, 5, 0, 1, 2, 10);
-            break;
-          case 1:
-            _createY(num, 300, -1.5, 5, 0, 1, 2, 10);
-            break;
-          case 2:
-            _createSin(num, 5, 0, 1, 2, 10);
-            break;
-          case 3:
-            _createSin(num, 5, 720, 1, 2, 10);
-            break;
-        }
-      }, time);
-
-      function _createY(num, x, vx, vy, rotate, attack, health, score) {
-        self.create(x, -40, vx, vy, 20, rotate, attack, health, score, 0);
-        if (num > 0) {
-          num--;
-          setTimeout(function() {
-            _createY(num, x, vx, vy, rotate, attack, health, score);
-          }, 800);
-        }
-      }
-
-      function _createSin(num, vy, rotate, attack, health, score) {
-        self.create(0, -40, 0, vy, 20, rotate, attack, health, score, 1);
-        if (num > 0) {
-          num--;
-          setTimeout(function() {
-            _createSin(num, vy, rotate, attack, health, score);
-          }, 200);
-        }
-      }
-    }
-  }
   this.create = function(x, y, vx, vy, radius, rotate, attack, health, score, type) {
     this.airplane.push({
       x: x,
@@ -502,6 +455,18 @@ function HostileAirplane() {
       cxt.restore();
     }
   }
+}
+
+function Boss() {
+  this.x;
+  this.y;
+  this.position = [ //[400, 400]
+    [415, 0]
+  ];
+
+  this.init = function() {}
+
+  this.draw = function() {}
 }
 
 function Bullet() {
@@ -659,6 +624,72 @@ function Star() {
     }
   }
 }
+
+function PassThrough() {
+  this.pass = [];
+
+  this.init = function() {
+    for (var i = 0; i < 6; i++) {
+      this.pass[i] = this['pass' + parseInt(i + 1)];
+    }
+    this.pass[0]();
+  }
+
+  this.pass1 = function() {
+    var air = data.element.hostileAirplane;
+
+    /* 1秒后第1波敌机 */
+    createAir(1000, 10, 0);
+    createAir(1000, 10, 1);
+
+    /* 12秒后第2波敌机 */
+    createAir(12000, 10, 2);
+    createAir(12000, 10, 3);
+
+    function createAir(time, num, type) {
+      setTimeout(function() {
+        switch (type) {
+          case 0:
+            _createY(num, 100, 1.5, 5, 0, 1, 2, 10);
+            break;
+          case 1:
+            _createY(num, 300, -1.5, 5, 0, 1, 2, 10);
+            break;
+          case 2:
+            _createSin(num, 5, 0, 1, 2, 10);
+            break;
+          case 3:
+            _createSin(num, 5, 720, 1, 2, 10);
+            break;
+        }
+      }, time);
+    }
+
+    function _createY(num, x, vx, vy, rotate, attack, health, score) {
+      air.create(x, -40, vx, vy, 20, rotate, attack, health, score, 0);
+      if (num > 0) {
+        num--;
+        setTimeout(function() {
+          _createY(num, x, vx, vy, rotate, attack, health, score);
+        }, 800);
+      }
+    }
+
+    function _createSin(num, vy, rotate, attack, health, score) {
+      air.create(0, -40, 0, vy, 20, rotate, attack, health, score, 1);
+      if (num > 0) {
+        num--;
+        setTimeout(function() {
+          _createSin(num, vy, rotate, attack, health, score);
+        }, 200);
+      }
+    }
+  }
+
+  this.pass2 = function() {}
+  this.pass3 = function() {}
+}
+
 
 function drawBackground(cxt) {
   var gr = cxt.createRadialGradient(data.system.width / 2, 0, 0, data.system.width / 2, 0, data.system.height * 1.2);
