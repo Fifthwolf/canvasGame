@@ -91,7 +91,6 @@ function init() {
     document.addEventListener('keydown', millenniumFalconMove, false);
     document.addEventListener('keyup', millenniumFalconMoveEnd, false);
   }
-
 }
 
 function gameloop() {
@@ -128,6 +127,9 @@ function drawImage() {
   drawBackground(cxt);
   if (data.system.start) {
     ele.star.draw(cxt);
+    if (ele.boss) {
+      ele.boss.draw(cxt);
+    }
     ele.bullet.draw(cxt);
     ele.hostileAirplane.draw(cxt);
     ele.millenniumFalcon.airDraw(cxt);
@@ -457,16 +459,43 @@ function HostileAirplane() {
   }
 }
 
-function Boss() {
-  this.x;
+function Boss(attribute) {
+  this.x = 200;
   this.y;
+  this.type;
+  this.health;
+  this.attack;
+  this.radius;
+  this.appearState = false;
   this.position = [ //[400, 400]
     [415, 0]
   ];
 
-  this.init = function() {}
+  this.init = function() {
+    this.type = attribute.type;
+    this.health = attribute.health;
+    this.attack = attribute.attack;
+    this.radius = attribute.radius;
+    this.y = -this.radius / 2;
+  }
+  this.appear = function() {
+    var delta = data.system.time.delta;
+    this.y += delta * 0.05;
+    if (this.y > this.radius / 2 + 10) {
+      this.appearState = true;
+    }
+  }
 
-  this.draw = function() {}
+  this.draw = function(cxt) {
+    if (!this.appearState) {
+      this.appear();
+    }
+
+    cxt.save();
+    cxt.translate(this.x, this.y); //坐标原点位于飞机中心
+    cxt.drawImage(data.image, this.position[this.type][0], this.position[this.type][1], 400, 400, -this.radius / 2, -this.radius / 2, this.radius, this.radius);
+    cxt.restore();
+  }
 }
 
 function Bullet() {
@@ -636,15 +665,19 @@ function PassThrough() {
   }
 
   this.pass1 = function() {
-    var air = data.element.hostileAirplane;
+    var ele = data.element,
+      air = ele.hostileAirplane;
 
     /* 1秒后第1波敌机 */
-    createAir(1000, 10, 0);
-    createAir(1000, 10, 1);
+    createAir(1, 10, 0);
+    createAir(1, 10, 1);
 
     /* 12秒后第2波敌机 */
-    createAir(12000, 10, 2);
-    createAir(12000, 10, 3);
+    createAir(12, 10, 2);
+    createAir(12, 10, 3);
+
+    /* 18秒后BOSS出现 */
+    createAir(18, 1, 4);
 
     function createAir(time, num, type) {
       setTimeout(function() {
@@ -661,8 +694,17 @@ function PassThrough() {
           case 3:
             _createSin(num, 5, 720, 1, 2, 10);
             break;
+          case 4:
+            data.element.boss = new Boss({
+              type: 0,
+              health: 100,
+              attack: 2,
+              radius: 300
+            });
+            data.element.boss.init();
+            break;
         }
-      }, time);
+      }, time * 1000);
     }
 
     function _createY(num, x, vx, vy, rotate, attack, health, score) {
