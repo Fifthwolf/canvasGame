@@ -467,6 +467,11 @@ function Boss(attribute) {
   this.attack;
   this.radius;
   this.appearState = false;
+  this.randomMove = {
+    state: true,
+    x: 0,
+    y: 0
+  };
   this.position = [ //[400, 400]
     [415, 0]
   ];
@@ -476,24 +481,46 @@ function Boss(attribute) {
     this.health = attribute.health;
     this.attack = attribute.attack;
     this.radius = attribute.radius;
-    this.y = -this.radius / 2;
+    this.y = -this.radius;
   }
   this.appear = function() {
     var delta = data.system.time.delta;
     this.y += delta * 0.05;
-    if (this.y > this.radius / 2 + 10) {
+    if (this.y > this.radius + 10) {
       this.appearState = true;
+    }
+  }
+  this.randomMoveFunc = function() {
+    var delta = data.system.time.delta;
+    if (this.randomMove.state) {
+      this.randomMove.x = delta * 0.05 * _randomNum();
+      this.randomMove.y = delta * 0.05 * _randomNum();
+      this.randomMove.state = false;
+    }
+    if (this.x > 250 || this.x < 150) {
+      this.randomMove.x = -this.randomMove.x;
+    }
+    if (this.y > 250 || this.y < 150) {
+      this.randomMove.y = -this.randomMove.y;
+    }
+    this.x += this.randomMove.x;
+    this.y += this.randomMove.y;
+
+    function _randomNum() {
+      return parseInt(Math.random() * 100) % 2 == 0 ? 1 : -1;
     }
   }
 
   this.draw = function(cxt) {
     if (!this.appearState) {
       this.appear();
+    } else {
+      this.randomMoveFunc();
     }
 
     cxt.save();
     cxt.translate(this.x, this.y); //坐标原点位于飞机中心
-    cxt.drawImage(data.image, this.position[this.type][0], this.position[this.type][1], 400, 400, -this.radius / 2, -this.radius / 2, this.radius, this.radius);
+    cxt.drawImage(data.image, this.position[this.type][0], this.position[this.type][1], 400, 400, -this.radius, -this.radius, this.radius * 2, this.radius * 2);
     cxt.restore();
   }
 }
@@ -669,15 +696,15 @@ function PassThrough() {
       air = ele.hostileAirplane;
 
     /* 1秒后第1波敌机 */
-    createAir(1, 10, 0);
-    createAir(1, 10, 1);
+    //createAir(1, 10, 0);
+    //createAir(1, 10, 1);
 
     /* 12秒后第2波敌机 */
-    createAir(12, 10, 2);
-    createAir(12, 10, 3);
+    //createAir(12, 10, 2);
+    //createAir(12, 10, 3);
 
-    /* 18秒后BOSS出现 */
-    createAir(18, 1, 4);
+    /* 1秒后BOSS出现 */
+    createAir(1, 1, 4);
 
     function createAir(time, num, type) {
       setTimeout(function() {
@@ -697,9 +724,9 @@ function PassThrough() {
           case 4:
             data.element.boss = new Boss({
               type: 0,
-              health: 100,
+              health: 1000,
               attack: 2,
-              radius: 300
+              radius: 150
             });
             data.element.boss.init();
             break;
@@ -732,7 +759,6 @@ function PassThrough() {
   this.pass3 = function() {}
 }
 
-
 function drawBackground(cxt) {
   var gr = cxt.createRadialGradient(data.system.width / 2, 0, 0, data.system.width / 2, 0, data.system.height * 1.2);
   gr.addColorStop(0, '#084097');
@@ -746,11 +772,18 @@ function killHostileAirplane() {
     blast = ele.blast,
     falcon = ele.millenniumFalcon,
     air = ele.hostileAirplane.airplane,
+    boss = ele.boss,
     bullet = ele.bullet.bullet;
 
   for (var i = bullet.length - 1; i >= 0; i--) {
     if (bullet[i].y < 0 || !bullet[i].own) {
       continue;
+    }
+    if (boss && _distance(bullet[i].x, bullet[i].y, boss.x, boss.y, boss.radius)) {
+      boss.health -= bullet[i].attack;
+      blast.create(bullet[i].x, bullet[i].y, 5);
+      bullet.splice(i, 1);
+      console.log(boss.health);
     }
     for (var j = air.length - 1; j >= 0; j--) {
       if (_distance(bullet[i].x, bullet[i].y, air[j].x, air[j].y, air[j].radius)) {
