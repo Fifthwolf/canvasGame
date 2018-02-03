@@ -278,6 +278,7 @@ function MillenniumFalcon() {
   this.radius = 40;
   this.score;
   this.health;
+  this.invincible;
   this.maxHealth;
   this.direction = {
     up: false,
@@ -303,6 +304,7 @@ function MillenniumFalcon() {
     this.score = 0;
     this.health = 20;
     this.maxHealth = 20;
+    this.invincible = false;
     this.targetInMobile = {
       on: false,
       x: 0,
@@ -809,8 +811,21 @@ function hurtMillenniumFalcon() {
   var ele = data.element,
     blast = ele.blast,
     falcon = ele.millenniumFalcon,
-    air = ele.hostileAirplane.airplane;
+    air = ele.hostileAirplane.airplane,
+    boss = ele.boss;
 
+  if (falcon.invincible) {
+    return;
+  }
+  if (boss && _distance(falcon.x, falcon.y, falcon.radius, boss.x, boss.y, boss.radius)) {
+    falcon.invincible = true;
+    blast.create(falcon.x, falcon.y, 35);
+    setTimeout(function() {
+      falcon.invincible = false;
+    }, 1000);
+    falcon.health -= boss.attack;
+    boss.health -= falcon.attack.value * 5;
+  }
   for (var i = air.length - 1; i >= 0; i--) {
     if (_distance(falcon.x, falcon.y, falcon.radius, air[i].x, air[i].y, air[i].radius)) {
       falcon.health -= air[i].attack;
@@ -820,12 +835,12 @@ function hurtMillenniumFalcon() {
         blast.create(air[i].x, air[i].y, 25);
         air.splice(i, 1);
       }
-      if (falcon.health <= 0) {
-        falcon.die();
-        blast.create(falcon.x, falcon.y, 50);
-        gameover();
-      }
     }
+  }
+  if (falcon.health <= 0) {
+    falcon.die();
+    blast.create(falcon.x, falcon.y, 50);
+    gameover();
   }
 
   function _distance(x1, y1, radius1, x2, y2, radius2) {
