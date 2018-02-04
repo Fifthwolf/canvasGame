@@ -262,7 +262,6 @@ function Blast() {
       cxt.fillStyle = gr;
       cxt.beginPath();
       cxt.arc(0, 0, this.blast[i].maxR, 0, Math.PI * 2);
-      cxt.closePath();
       cxt.fill();
       cxt.restore();
       this.grow(this.blast[i], i);
@@ -562,10 +561,21 @@ function Bullet() {
       this.move(this.bullet[i]);
 
       cxt.save();
-      cxt.beginPath();
-      cxt.fillStyle = '#fff';
-      cxt.rect(this.bullet[i].x, this.bullet[i].y, 1, 4);
-      cxt.fill();
+      if (this.bullet[i].own) {
+        cxt.beginPath();
+        cxt.fillStyle = '#fff';
+        cxt.rect(this.bullet[i].x, this.bullet[i].y, 1, 4);
+        cxt.fill();
+      } else {
+        var gr = cxt.createRadialGradient(this.bullet[i].x, this.bullet[i].y, 1, this.bullet[i].x, this.bullet[i].y, 4);
+        gr.addColorStop(0, '#fff');
+        gr.addColorStop(0.7, '#f80');
+        gr.addColorStop(1, '#f00');
+        cxt.fillStyle = gr;
+        cxt.beginPath();
+        cxt.arc(this.bullet[i].x, this.bullet[i].y, 4, 0, Math.PI * 2);
+        cxt.fill();
+      }
       cxt.restore();
     }
   }
