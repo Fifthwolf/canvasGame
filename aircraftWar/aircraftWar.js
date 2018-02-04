@@ -391,13 +391,14 @@ function MillenniumFalcon() {
     cxt.restore();
   }
   this.infoDraw = function(cxt) {
+    var healthPercentage = Math.max(0, this.health) / this.maxHealth;
     cxt.save();
     cxt.beginPath();
     cxt.font = "20px Verdana";
     cxt.textAlign = "right";
-    cxt.fillStyle = '#0f6';
+    cxt.fillStyle = 'rgb(' + Math.floor(255 - healthPercentage * 255) + ',' + Math.floor(healthPercentage * 255) + ',' + Math.floor(healthPercentage * 102) + ')';
     cxt.fillText("HP", 322, 33);
-    cxt.rect(330, 15, Math.max(0, this.health) / this.maxHealth * 50, 20);
+    cxt.rect(330, 15, healthPercentage * 50, 20);
     cxt.fill();
     cxt.beginPath();
     cxt.strokeStyle = '#000';
