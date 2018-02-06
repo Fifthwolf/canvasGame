@@ -466,7 +466,10 @@ function Boss(attribute) {
   this.y;
   this.type;
   this.health;
-  this.attack;
+  this.attack = {
+    on: false,
+    value: 5
+  };
   this.radius;
   this.appearState = false;
   this.randomMove = {
@@ -477,13 +480,18 @@ function Boss(attribute) {
   this.position = [ //[400, 400]
     [415, 0]
   ];
+  this.time;
 
   this.init = function() {
+    var self = this;
     this.type = attribute.type;
     this.health = attribute.health;
     this.attack = attribute.attack;
     this.radius = attribute.radius;
     this.y = -this.radius;
+    this.time = setInterval(function() {
+      self.attack.on = true;
+    }, data.system.time.delta * 50);
   }
   this.appear = function() {
     var delta = data.system.time.delta;
@@ -518,6 +526,12 @@ function Boss(attribute) {
       this.appear();
     } else {
       this.randomMoveFunc();
+    }
+    if (this.attack.on) {
+      for (var i = 0; i < 360; i += 20) {
+        data.element.bullet.create(this.x, this.y, 20 * Math.sin(i * Math.PI / 180), 20 * Math.cos(i * Math.PI / 180), this.attack.value, 1, 0, false);
+      }
+      this.attack.on = false;
     }
 
     cxt.save();
@@ -709,15 +723,15 @@ function PassThrough() {
       air = ele.hostileAirplane;
 
     /* 1秒后第1波敌机 */
-    createAir(1, 10, 0);
-    createAir(1, 10, 1);
+    //createAir(1, 10, 0);
+    //createAir(1, 10, 1);
 
     /* 12秒后第2波敌机 */
-    createAir(12, 10, 2);
-    createAir(12, 10, 3);
+    //createAir(12, 10, 2);
+    //createAir(12, 10, 3);
 
     /* 1秒后BOSS出现 */
-    createAir(18, 1, 4);
+    createAir(1, 1, 4);
 
     function createAir(time, num, type) {
       setTimeout(function() {
@@ -738,7 +752,10 @@ function PassThrough() {
             data.element.boss = new Boss({
               type: 0,
               health: 500,
-              attack: 2,
+              attack: {
+                on: false,
+                value: 5
+              },
               radius: 150
             });
             data.element.boss.init();
@@ -797,7 +814,6 @@ function killHostileAirplane() {
         boss.health -= bullet[i].attack;
         blast.create(bullet[i].x, bullet[i].y, 5);
         bullet.splice(i, 1);
-        console.log(boss.health);
       } else {
         for (var j = air.length - 1; j >= 0; j--) {
           if (_distance(bullet[i].x, bullet[i].y, air[j].x, air[j].y, air[j].radius)) {
@@ -816,6 +832,13 @@ function killHostileAirplane() {
     } else {
       if (_distance(bullet[i].x, bullet[i].y, falcon.x, falcon.y, falcon.radius)) {
         falcon.health -= bullet[i].attack;
+        blast.create(bullet[i].x, bullet[i].y, 10);
+        bullet.splice(i, 1);
+        if (falcon.health <= 0) {
+          falcon.die();
+          blast.create(falcon.x, falcon.y, 50);
+          gameover();
+        }
       }
     }
   }
@@ -843,6 +866,11 @@ function hurtMillenniumFalcon() {
     }, 1000);
     falcon.health -= boss.attack;
     boss.health -= falcon.attack.value * 5;
+    if (falcon.health <= 0) {
+      falcon.die();
+      blast.create(falcon.x, falcon.y, 50);
+      gameover();
+    }
   }
   for (var i = air.length - 1; i >= 0; i--) {
     if (_distance(falcon.x, falcon.y, falcon.radius, air[i].x, air[i].y, air[i].radius)) {
@@ -854,11 +882,6 @@ function hurtMillenniumFalcon() {
         air.splice(i, 1);
       }
     }
-  }
-  if (falcon.health <= 0) {
-    falcon.die();
-    blast.create(falcon.x, falcon.y, 50);
-    gameover();
   }
 
   function _distance(x1, y1, radius1, x2, y2, radius2) {
