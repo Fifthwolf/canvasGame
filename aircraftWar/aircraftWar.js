@@ -274,7 +274,7 @@ function MillenniumFalcon() {
   this.y;
   this.width = 80;
   this.height = 80;
-  this.radius = 40;
+  this.radius = 30;
   this.score;
   this.health;
   this.invincible;
@@ -301,8 +301,8 @@ function MillenniumFalcon() {
     this.x = 200;
     this.y = 500;
     this.score = 0;
-    this.health = 20;
-    this.maxHealth = 20;
+    this.health = 1000;
+    this.maxHealth = 1000;
     this.invincible = false;
     this.targetInMobile = {
       on: false,
@@ -466,10 +466,62 @@ function Boss(attribute) {
   this.y;
   this.type;
   this.health;
+  this.maxHealth;
   this.attack = {
     on: false,
-    value: 5
+    value: 5,
+    interval: 200,
+    violent: false
   };
+  this.attackMode = function(mode) {
+    var self = this;
+
+    switch (mode) {
+      case 0:
+        for (var i = 0; i < 360; i += 20) {
+          data.element.bullet.create(self.x, self.y, 20 * Math.sin(i * Math.PI / 180), 20 * Math.cos(i * Math.PI / 180), self.attack.value, 1, 0, false);
+        }
+        setTimeout(function() {
+          for (var i = 10; i < 360; i += 20) {
+            data.element.bullet.create(self.x, self.y, 20 * Math.sin(i * Math.PI / 180), 20 * Math.cos(i * Math.PI / 180), self.attack.value, 1, 0, false);
+          }
+        }, 400);
+        break;
+      case 1:
+        _mode1(0);
+        break;
+      case 2:
+        _mode2(720);
+        break;
+    }
+
+    if (!this.attack.violent && this.health < this.maxHealth / 3) {
+      this.attack.violent = true;
+      this.attack.interval /= 3;
+      clearInterval(this.time);
+      this.time = setInterval(function() {
+        self.attack.on = true;
+      }, data.system.time.delta * this.attack.interval);
+    }
+
+    function _mode1(i) {
+      data.element.bullet.create(self.x, self.y, 20 * Math.sin(i * Math.PI / 180), 20 * Math.cos(i * Math.PI / 180), self.attack.value, 1, 0, false);
+      if (i < 720) {
+        setTimeout(function() {
+          _mode1(i + 20);
+        }, 10);
+      }
+    }
+
+    function _mode2(i) {
+      data.element.bullet.create(self.x, self.y, 20 * Math.sin(i * Math.PI / 180), 20 * Math.cos(i * Math.PI / 180), self.attack.value, 1, 0, false);
+      if (i >= 0) {
+        setTimeout(function() {
+          _mode2(i - 20);
+        }, 10);
+      }
+    }
+  }
   this.radius;
   this.appearState = false;
   this.randomMove = {
@@ -486,12 +538,15 @@ function Boss(attribute) {
     var self = this;
     this.type = attribute.type;
     this.health = attribute.health;
+    this.maxHealth = this.health;
     this.attack = attribute.attack;
+    this.attack.interval = 200;
+    this.attack.violent = false;
     this.radius = attribute.radius;
     this.y = -this.radius;
     this.time = setInterval(function() {
       self.attack.on = true;
-    }, data.system.time.delta * 50);
+    }, data.system.time.delta * this.attack.interval);
   }
   this.appear = function() {
     var delta = data.system.time.delta;
@@ -522,15 +577,15 @@ function Boss(attribute) {
   }
 
   this.draw = function(cxt) {
+    console.log(this.health);
     if (!this.appearState) {
       this.appear();
     } else {
       this.randomMoveFunc();
     }
     if (this.attack.on) {
-      for (var i = 0; i < 360; i += 20) {
-        data.element.bullet.create(this.x, this.y, 20 * Math.sin(i * Math.PI / 180), 20 * Math.cos(i * Math.PI / 180), this.attack.value, 1, 0, false);
-      }
+      var mode = Math.floor(Math.random() * 100) % 3;
+      this.attackMode(mode);
       this.attack.on = false;
     }
 
@@ -754,7 +809,7 @@ function PassThrough() {
               health: 500,
               attack: {
                 on: false,
-                value: 5
+                value: 5,
               },
               radius: 150
             });
@@ -864,7 +919,7 @@ function hurtMillenniumFalcon() {
     setTimeout(function() {
       falcon.invincible = false;
     }, 1000);
-    falcon.health -= boss.attack;
+    falcon.health -= boss.attack.value;
     boss.health -= falcon.attack.value * 5;
     if (falcon.health <= 0) {
       falcon.die();
