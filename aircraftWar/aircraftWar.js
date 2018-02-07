@@ -277,8 +277,9 @@ function MillenniumFalcon() {
   this.radius = 30;
   this.score;
   this.health;
-  this.invincible;
   this.maxHealth;
+  this.invincible;
+  this.dieState;
   this.direction = {
     up: false,
     right: false,
@@ -301,9 +302,10 @@ function MillenniumFalcon() {
     this.x = 200;
     this.y = 500;
     this.score = 0;
-    this.health = 1000;
-    this.maxHealth = 1000;
+    this.health = 100;
+    this.maxHealth = 100;
     this.invincible = false;
+    this.dieState = false;
     this.targetInMobile = {
       on: false,
       x: 0,
@@ -467,6 +469,7 @@ function Boss(attribute) {
   this.type;
   this.health;
   this.maxHealth;
+  this.dieState;
   this.attack = {
     on: false,
     value: 5,
@@ -524,6 +527,7 @@ function Boss(attribute) {
   }
   this.radius;
   this.appearState = false;
+  this.score;
   this.randomMove = {
     state: true,
     x: 0,
@@ -539,10 +543,12 @@ function Boss(attribute) {
     this.type = attribute.type;
     this.health = attribute.health;
     this.maxHealth = this.health;
+    this.dieState = false;
     this.attack = attribute.attack;
     this.attack.interval = 200;
     this.attack.violent = false;
     this.radius = attribute.radius;
+    this.score = attribute.score;
     this.y = -this.radius;
     this.time = setInterval(function() {
       self.attack.on = true;
@@ -575,9 +581,34 @@ function Boss(attribute) {
       return parseInt(Math.random() * 100) % 2 == 0 ? 1 : -1;
     }
   }
+  this.die = function() {
+    var self = this,
+      ele = data.element;
+
+    this.attack.on = false;
+    clearInterval(this.time);
+
+    if (!this.dieState) {
+      this.dieState = true;
+      var blast = data.element.blast;
+      for (var i = 0; i < 10; i++) {
+        var delayTime = Math.random() * 200 + i * 250;
+        setTimeout(function() {
+          var deviationX = Math.random() * 200 - 100;
+          var deviationY = Math.random() * 200 - 100;
+          blast.create(self.x + deviationX, self.y + deviationY, 50);
+        }, delayTime);
+      }
+      setTimeout(function() {
+        blast.create(self.x, self.y, 150);
+        ele.millenniumFalcon.score += self.score;
+        data.element.boss = null;
+      }, 2500);
+    }
+  }
 
   this.draw = function(cxt) {
-    console.log(this.health);
+    //console.log(this.health);
     if (!this.appearState) {
       this.appear();
     } else {
@@ -806,12 +837,13 @@ function PassThrough() {
           case 4:
             data.element.boss = new Boss({
               type: 0,
-              health: 500,
+              health: 100,
               attack: {
                 on: false,
                 value: 5,
               },
-              radius: 150
+              radius: 150,
+              score: 100
             });
             data.element.boss.init();
             break;
@@ -869,6 +901,9 @@ function killHostileAirplane() {
         boss.health -= bullet[i].attack;
         blast.create(bullet[i].x, bullet[i].y, 5);
         bullet.splice(i, 1);
+        if (boss.health <= 0) {
+          boss.die();
+        }
       } else {
         for (var j = air.length - 1; j >= 0; j--) {
           if (_distance(bullet[i].x, bullet[i].y, air[j].x, air[j].y, air[j].radius)) {
@@ -889,11 +924,6 @@ function killHostileAirplane() {
         falcon.health -= bullet[i].attack;
         blast.create(bullet[i].x, bullet[i].y, 10);
         bullet.splice(i, 1);
-        if (falcon.health <= 0) {
-          falcon.die();
-          blast.create(falcon.x, falcon.y, 50);
-          gameover();
-        }
       }
     }
   }
@@ -913,6 +943,7 @@ function hurtMillenniumFalcon() {
   if (falcon.invincible) {
     return;
   }
+
   if (boss && _distance(falcon.x, falcon.y, falcon.radius, boss.x, boss.y, boss.radius)) {
     blast.create(falcon.x, falcon.y, 35);
     falcon.invincible = true;
@@ -921,12 +952,8 @@ function hurtMillenniumFalcon() {
     }, 1000);
     falcon.health -= boss.attack.value;
     boss.health -= falcon.attack.value * 5;
-    if (falcon.health <= 0) {
-      falcon.die();
-      blast.create(falcon.x, falcon.y, 50);
-      gameover();
-    }
   }
+
   for (var i = air.length - 1; i >= 0; i--) {
     if (_distance(falcon.x, falcon.y, falcon.radius, air[i].x, air[i].y, air[i].radius)) {
       falcon.health -= air[i].attack;
@@ -937,6 +964,13 @@ function hurtMillenniumFalcon() {
         air.splice(i, 1);
       }
     }
+  }
+
+  if (falcon.health <= 0 && !falcon.dieState) {
+    falcon.dieState = true;
+    falcon.die();
+    blast.create(falcon.x, falcon.y, 50);
+    gameover();
   }
 
   function _distance(x1, y1, radius1, x2, y2, radius2) {
