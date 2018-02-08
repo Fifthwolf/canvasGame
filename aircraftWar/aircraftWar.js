@@ -58,19 +58,24 @@ function imageLoaded() {
 
 function game() {
   data.element.startText = new StartText();
+
   if (data.system.mobile) {
-    canvas.addEventListener('touchend', init, false);
+    canvas.addEventListener('touchend', function() {
+      init(0, 0);
+    }, false);
   } else {
-    canvas.addEventListener('click', init, false);
+    canvas.addEventListener('click', function() {
+      init(0, 0);
+    }, false);
   }
 }
 
-function init() {
+function init(score, passIndex) {
   canvas.removeEventListener('touchend', init);
   canvas.removeEventListener('click', init);
   data.system.start = true;
   var ele = data.element;
-  ele.startText.firstGame = false;
+  ele.startText = null;
   ele.star = new Star();
   ele.star.init();
   ele.blast = new Blast();
@@ -78,10 +83,11 @@ function init() {
   ele.bullet = new Bullet();
   ele.bullet.init();
   ele.hostileAirplane = new HostileAirplane();
+  ele.boss = null;
   ele.millenniumFalcon = new MillenniumFalcon();
-  ele.millenniumFalcon.init();
+  ele.millenniumFalcon.init(score);
   data.passThrough = new PassThrough();
-  data.passThrough.init();
+  data.passThrough.init(passIndex);
   clearLimitsElement();
   if (data.system.mobile) {
     canvas.addEventListener('touchstart', millenniumFalconMoveInMobile, false);
@@ -112,6 +118,10 @@ function gameloop() {
 function gameover() {
   setTimeout(function() {
     data.system.start = false;
+    data.element.startText = new StartText();
+    data.element.startText.init({
+      firstGame: false
+    });
   }, 500);
 
   if (data.system.mobile) {
@@ -135,7 +145,8 @@ function drawImage() {
     ele.millenniumFalcon.airDraw(cxt);
     ele.millenniumFalcon.infoDraw(cxt);
     ele.blast.draw(cxt);
-  } else {
+  }
+  if (ele.startText) {
     ele.startText.draw(cxt);
   }
 }
@@ -145,13 +156,19 @@ function StartText() {
   this.y = 200;
   this.textAlpha = 1;
   this.firstGame = true;
+  this.complete = false;
   this.picState = 1; //0下降，1上升
   this.textState = 0; //0减弱，1增强
   this.position = [
     [0, 0],
-    [0, 200]
+    [0, 200],
+    [0, 400]
   ];
 
+  this.init = function(attribute) {
+    this.firstGame = attribute.firstGame;
+    this.complete = attribute.complete;
+  }
   this.textAlpahChange = function() {
     if (this.textState) {
       this.textAlpha += data.system.time.delta * 0.005;
@@ -183,11 +200,18 @@ function StartText() {
     this.startPicFloat();
     cxt.save();
     cxt.translate(this.x, this.y);
+
+    var posIndex;
     if (this.firstGame) {
-      cxt.drawImage(data.image, this.position[0][0], this.position[0][1], 400, 200, -200, -100, 400, 200);
+      posIndex = 0;
     } else {
-      cxt.drawImage(data.image, this.position[1][0], this.position[1][1], 400, 200, -200, -100, 400, 200);
+      if (this.complete) {
+        posIndex = 2;
+      } else {
+        posIndex = 1;
+      }
     }
+    cxt.drawImage(data.image, this.position[posIndex][0], this.position[posIndex][1], 400, 200, -200, -100, 400, 200);
     cxt.restore();
 
     cxt.save();
@@ -202,7 +226,12 @@ function StartText() {
     if (this.firstGame) {
       cxt.fillText("点击以开始游戏", 200, 500);
     } else {
-      cxt.fillText("点击重新开始游戏", 200, 500);
+      if (this.complete) {
+        cxt.fillText("恭喜通过第" + data.passThrough.num + "关", 200, 500);
+      } else {
+        cxt.fillText("点击重新开始游戏", 200, 500);
+      }
+
     }
     cxt.restore();
   }
@@ -297,11 +326,11 @@ function MillenniumFalcon() {
   }
   this.time;
 
-  this.init = function() {
+  this.init = function(score) {
     var self = this;
     this.x = 200;
     this.y = 500;
-    this.score = 0;
+    this.score = score;
     this.health = 100;
     this.maxHealth = 100;
     this.invincible = false;
@@ -313,7 +342,7 @@ function MillenniumFalcon() {
     }
     this.attack = {
       on: false,
-      value: 1
+      value: 5
     };
 
     this.time = setInterval(function() {
@@ -359,6 +388,36 @@ function MillenniumFalcon() {
     this.x += vx * delta * 0.5;
     this.y += vy * delta * 0.5;
   }
+  this.clearance = function() {
+    var self = this,
+      delta = data.system.time.delta;
+
+    document.removeEventListener('keydown', millenniumFalconMove);
+    document.removeEventListener('keyup', millenniumFalconMoveEnd);
+
+    data.element.startText = new StartText();
+    data.element.startText.init({
+      complete: true
+    });
+    requestAnimationFrame(_moveUp);
+
+    function _moveUp() {
+      self.y -= delta * 0.5;
+      if (self.y > 0) {
+        requestAnimationFrame(_moveUp);
+      } else {
+        if (data.system.mobile) {
+          canvas.addEventListener('touchend', function() {
+            init(self.score, data.passThrough.num);
+          }, false);
+        } else {
+          canvas.addEventListener('click', function() {
+            init(self.score, data.passThrough.num);
+          }, false);
+        }
+      }
+    }
+  }
   this.die = function() {
     this.radius = 0;
     this.width = 0;
@@ -388,7 +447,7 @@ function MillenniumFalcon() {
 
     cxt.save();
     cxt.translate(this.x, this.y); //坐标原点位于飞机中心
-    cxt.drawImage(data.image, 0, 400, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
+    cxt.drawImage(data.image, 0, 610, this.width, this.height, -this.width / 2, -this.height / 2, this.width, this.height);
     cxt.restore();
   }
   this.infoDraw = function(cxt) {
@@ -457,7 +516,7 @@ function HostileAirplane() {
       cxt.save();
       cxt.translate(this.airplane[i].x, this.airplane[i].y); //坐标原点位于飞机中心
       cxt.rotate(this.airplane[i].rotate * Math.PI / 180);
-      cxt.drawImage(data.image, 100, 400, 60, 60, -30, -30, 40, 40);
+      cxt.drawImage(data.image, 100, 610, 60, 60, -30, -30, 40, 40);
       cxt.restore();
     }
   }
@@ -602,13 +661,13 @@ function Boss(attribute) {
       setTimeout(function() {
         blast.create(self.x, self.y, 150);
         ele.millenniumFalcon.score += self.score;
+        ele.millenniumFalcon.clearance();
         data.element.boss = null;
       }, 2500);
     }
   }
 
   this.draw = function(cxt) {
-    //console.log(this.health);
     if (!this.appearState) {
       this.appear();
     } else {
@@ -796,28 +855,30 @@ function Star() {
 
 function PassThrough() {
   this.pass = [];
+  this.num;
 
-  this.init = function() {
+  this.init = function(num) {
     for (var i = 0; i < 6; i++) {
       this.pass[i] = this['pass' + parseInt(i + 1)];
     }
-    this.pass[0]();
+    this.pass[num](this);
   }
 
-  this.pass1 = function() {
+  this.pass1 = function(self) {
+    self.num = 1;
     var ele = data.element,
       air = ele.hostileAirplane;
 
     /* 1秒后第1波敌机 */
-    //createAir(1, 10, 0);
-    //createAir(1, 10, 1);
+    createAir(1, 10, 0);
+    createAir(1, 10, 1);
 
     /* 12秒后第2波敌机 */
-    //createAir(12, 10, 2);
-    //createAir(12, 10, 3);
+    createAir(12, 10, 2);
+    createAir(12, 10, 3);
 
-    /* 1秒后BOSS出现 */
-    createAir(1, 1, 4);
+    /* 18秒后BOSS出现 */
+    createAir(18, 1, 4);
 
     function createAir(time, num, type) {
       setTimeout(function() {
@@ -872,8 +933,143 @@ function PassThrough() {
     }
   }
 
-  this.pass2 = function() {}
-  this.pass3 = function() {}
+  this.pass2 = function(self) {
+    self.num = 2;
+    var ele = data.element,
+      air = ele.hostileAirplane;
+
+    /* 1秒后第1波敌机 */
+    createAir(1, 10, 0);
+    createAir(1, 10, 1);
+
+    /* 12秒后第2波敌机 */
+    createAir(12, 10, 2);
+    createAir(12, 10, 3);
+
+    /* 18秒后BOSS出现 */
+    createAir(18, 1, 4);
+
+    function createAir(time, num, type) {
+      setTimeout(function() {
+        switch (type) {
+          case 0:
+            _createY(num, 100, 1.5, 5, 0, 1, 2, 10);
+            break;
+          case 1:
+            _createY(num, 300, -1.5, 5, 0, 1, 2, 10);
+            break;
+          case 2:
+            _createSin(num, 5, 0, 1, 2, 10);
+            break;
+          case 3:
+            _createSin(num, 5, 720, 1, 2, 10);
+            break;
+          case 4:
+            data.element.boss = new Boss({
+              type: 0,
+              health: 100,
+              attack: {
+                on: false,
+                value: 5,
+              },
+              radius: 150,
+              score: 100
+            });
+            data.element.boss.init();
+            break;
+        }
+      }, time * 1000);
+    }
+
+    function _createY(num, x, vx, vy, rotate, attack, health, score) {
+      air.create(x, -40, vx, vy, 20, rotate, attack, health, score, 0);
+      if (num > 0) {
+        num--;
+        setTimeout(function() {
+          _createY(num, x, vx, vy, rotate, attack, health, score);
+        }, 800);
+      }
+    }
+
+    function _createSin(num, vy, rotate, attack, health, score) {
+      air.create(0, -40, 0, vy, 20, rotate, attack, health, score, 1);
+      if (num > 0) {
+        num--;
+        setTimeout(function() {
+          _createSin(num, vy, rotate, attack, health, score);
+        }, 200);
+      }
+    }
+  }
+
+  this.pass3 = function(self) {
+    self.num = 3;
+    var ele = data.element,
+      air = ele.hostileAirplane;
+
+    /* 1秒后第1波敌机 */
+    createAir(1, 10, 0);
+    createAir(1, 10, 1);
+
+    /* 12秒后第2波敌机 */
+    createAir(12, 10, 2);
+    createAir(12, 10, 3);
+
+    /* 18秒后BOSS出现 */
+    createAir(18, 1, 4);
+
+    function createAir(time, num, type) {
+      setTimeout(function() {
+        switch (type) {
+          case 0:
+            _createY(num, 100, 1.5, 5, 0, 1, 2, 10);
+            break;
+          case 1:
+            _createY(num, 300, -1.5, 5, 0, 1, 2, 10);
+            break;
+          case 2:
+            _createSin(num, 5, 0, 1, 2, 10);
+            break;
+          case 3:
+            _createSin(num, 5, 720, 1, 2, 10);
+            break;
+          case 4:
+            data.element.boss = new Boss({
+              type: 0,
+              health: 100,
+              attack: {
+                on: false,
+                value: 5,
+              },
+              radius: 150,
+              score: 100
+            });
+            data.element.boss.init();
+            break;
+        }
+      }, time * 1000);
+    }
+
+    function _createY(num, x, vx, vy, rotate, attack, health, score) {
+      air.create(x, -40, vx, vy, 20, rotate, attack, health, score, 0);
+      if (num > 0) {
+        num--;
+        setTimeout(function() {
+          _createY(num, x, vx, vy, rotate, attack, health, score);
+        }, 800);
+      }
+    }
+
+    function _createSin(num, vy, rotate, attack, health, score) {
+      air.create(0, -40, 0, vy, 20, rotate, attack, health, score, 1);
+      if (num > 0) {
+        num--;
+        setTimeout(function() {
+          _createSin(num, vy, rotate, attack, health, score);
+        }, 200);
+      }
+    }
+  }
 }
 
 function drawBackground(cxt) {
