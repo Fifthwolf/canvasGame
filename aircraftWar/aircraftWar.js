@@ -69,6 +69,7 @@ function game() {
 function init() {
   canvas.removeEventListener('touchend', init);
   canvas.removeEventListener('click', init);
+  data.TIME = {};
   data.system.start = true;
   var ele = data.element;
   ele.startText = null;
@@ -116,12 +117,18 @@ function gameloop() {
 }
 
 function gameover() {
+  for (var i in data.TIME.PassThrough) {
+    clearTimeout(data.TIME.PassThrough[i]);
+  }
+
   setTimeout(function() {
     data.system.start = false;
     data.element.startText = new StartText();
     data.element.startText.init({
       firstGame: false
     });
+    data.element.millenniumFalcon = null;
+    data.passThrough = null;
   }, 500);
 
   if (data.system.mobile) {
@@ -330,6 +337,8 @@ function MillenniumFalcon() {
     var self = this;
     this.x = 200;
     this.y = 500;
+    this.width = 80;
+    this.height = 80;
     this.score = score;
     this.health = 30;
     this.maxHealth = 30;
@@ -864,20 +873,21 @@ function PassThrough() {
     self.num = 1;
     var ele = data.element,
       air = ele.hostileAirplane;
+    data.TIME.PassThrough = {};
 
     /* 1秒后第1波敌机 */
-    createAir(1, 10, 0);
-    createAir(1, 10, 1);
+    createAir(1, 10, 0, 0);
+    createAir(1, 10, 1, 1);
 
     /* 12秒后第2波敌机 */
-    createAir(12, 10, 2);
-    createAir(12, 10, 3);
+    createAir(12, 10, 2, 2);
+    createAir(12, 10, 3, 3);
 
     /* 18秒后BOSS出现 */
-    createAir(18, 1, 4);
+    createAir(18, 1, 4, 4);
 
-    function createAir(time, num, type) {
-      setTimeout(function() {
+    function createAir(time, num, type, index) {
+      data.TIME.PassThrough[index] = setTimeout(function() {
         switch (type) {
           case 0:
             _createY(num, 100, 1.5, 5, 0, 1, 2, 10);
@@ -933,20 +943,21 @@ function PassThrough() {
     self.num = 2;
     var ele = data.element,
       air = ele.hostileAirplane;
+    data.TIME.PassThrough = {};
 
     /* 1秒后第1波敌机 */
-    createAir(1, 10, 0);
-    createAir(1, 10, 1);
+    createAir(1, 10, 0, 0);
+    createAir(1, 10, 1, 1);
 
     /* 12秒后第2波敌机 */
-    createAir(12, 10, 2);
-    createAir(12, 10, 3);
+    createAir(12, 10, 2, 2);
+    createAir(12, 10, 3, 3);
 
     /* 18秒后BOSS出现 */
-    createAir(18, 1, 4);
+    createAir(18, 1, 4, 4);
 
-    function createAir(time, num, type) {
-      setTimeout(function() {
+    function createAir(time, num, type, index) {
+      data.TIME.PassThrough[index] = setTimeout(function() {
         switch (type) {
           case 0:
             _createY(num, 100, 1.5, 5, 0, 1, 2, 10);
@@ -1002,20 +1013,21 @@ function PassThrough() {
     self.num = 3;
     var ele = data.element,
       air = ele.hostileAirplane;
+    data.TIME.PassThrough = {};
 
     /* 1秒后第1波敌机 */
-    createAir(1, 10, 0);
-    createAir(1, 10, 1);
+    createAir(1, 10, 0, 0);
+    createAir(1, 10, 1, 1);
 
     /* 12秒后第2波敌机 */
-    createAir(12, 10, 2);
-    createAir(12, 10, 3);
+    createAir(12, 10, 2, 2);
+    createAir(12, 10, 3, 3);
 
     /* 18秒后BOSS出现 */
-    createAir(18, 1, 4);
+    createAir(18, 1, 4, 4);
 
-    function createAir(time, num, type) {
-      setTimeout(function() {
+    function createAir(time, num, type, index) {
+      data.TIME.PassThrough[index] = setTimeout(function() {
         switch (type) {
           case 0:
             _createY(num, 100, 1.5, 5, 0, 1, 2, 10);
@@ -1173,7 +1185,7 @@ function hurtMillenniumFalcon() {
 
 function clearLimitsElement() {
   var ele = data.element;
-  data.TIME = setInterval(function() {
+  data.TIME.clearLimitsElement = setInterval(function() {
     ele.bullet.destroy();
     ele.star.destroy();
   }, 5000);
