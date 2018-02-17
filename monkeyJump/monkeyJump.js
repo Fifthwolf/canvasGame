@@ -32,7 +32,7 @@ var data = {
 }
 
 window.onload = function() {
-  if (/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  if (/Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent)) {
     data.system.mobile = true;
   } else {
     data.system.mobile = false;
