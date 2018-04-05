@@ -2,8 +2,8 @@ Element.prototype['$'] = function(tag) {
   return $(tag, this);
 }
 
-var loading = document.getElementById('loading'),
-  canvas = document.getElementById('canvas');
+var loading = $('#loading'),
+  canvas = $('#canvas');
 
 function suitScreen() {
   var width = document.documentElement.clientWidth,
