@@ -1,3 +1,7 @@
+Element.prototype['$'] = function(tag) {
+  return $(tag, this);
+}
+
 var loading = document.getElementById('loading'),
   canvas = document.getElementById('canvas');
 
@@ -48,4 +52,29 @@ function getCookie(name) {
   } else {
     return null;
   }
+}
+
+function $(tag, parent) {
+  var tags = tag.split(' '),
+    parent = parent || document,
+    ele;
+  for (var i = 0, len = tags.length; i < len; i++) {
+    if (/^#[\w-_]+/.test(tags[i])) {
+      ele = parent.getElementById(tags[i].slice(1));
+    } else if (/^\.[\w-_]+/.test(tags[i])) {
+      if (tags[i].match(/^\.([\w-_]+)\.(\d+)/)) {
+        ele = parent.getElementsByClassName(RegExp.$1)[RegExp.$2];
+      } else {
+        ele = parent.getElementsByClassName(tags[i].slice(1));
+      }
+    } else {
+      if (tags[i].match(/^([\w-_]+)\.(\d+)/)) {
+        ele = parent.getElementsByTagName(RegExp.$1)[RegExp.$2];
+      } else {
+        ele = parent.getElementsByTagName(tags[i]);
+      }
+    }
+    parent = ele;
+  }
+  return ele;
 }
