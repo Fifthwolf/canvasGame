@@ -1,7 +1,26 @@
 window.onload = function() {
-  suitScreen();
-  // imageLoaded();
+  suitScreen(800, 600);
 };
+
+// 欢迎界面
+(function() {
+  function Welcome(options) {
+    this.show = options.show || false;
+  }
+  Welcome.prototype.init = function() {
+    
+  }
+  window.Welcome = Welcome;
+})();
+
+// 游戏
+(function() {
+  function Game() {
+
+  }
+  Game.prototype.init = function() {}
+  window.Game = Game;
+})();
 
 // 球
 (function() {
@@ -20,7 +39,7 @@ window.onload = function() {
   window.Ball = Ball;
 })();
 
-//砖块
+// 砖块
 (function() {
   function Brick() {
     this.x;
@@ -37,29 +56,22 @@ window.onload = function() {
 // 绘制
 (function() {
   function Canvas(options) {
-    this.width = options.width || 800;
-    this.height = options.height || 600;
-    /*
-    this.drawBackground = function() {
-      console.log(1)
-    }
-    this.drawBrick = function() {}
-    this.drawBall = function() {}
-    this.drawInfo = function() {}
-    
-    this.draw = function() {
-      this.drawBackground();
-      this.drawBrick();
-      this.drawBall();
-      this.drawInfo();
-      requestAnimationFrame(this.draw);
-    }*/
+    this.canvas = options.canvas;
+    this.width = options.width;
+    this.height = options.height;
+    this.cxt = canvas.getContext('2d');
   }
   Canvas.prototype.init = function() {
+    this.canvas.width = this.width;
+    this.canvas.height = this.height;
     this.draw();
   }
   Canvas.prototype.drawBackground = function() {
-    
+    var gr = this.cxt.createRadialGradient(this.width / 2, 0, this.height / 2, this.width / 2, 0, this.width);
+    gr.addColorStop(0, '#0071ca');
+    gr.addColorStop(0.8, '#01062c');
+    this.cxt.fillStyle = gr;
+    this.cxt.fillRect(0, 0, this.width, this.height);
   }
   Canvas.prototype.drawBrick = function() {
 
@@ -81,6 +93,7 @@ window.onload = function() {
   window.Canvas = Canvas;
 })();
 
+// 整体
 (function() {
   var system = {},
     data = {};
@@ -98,18 +111,21 @@ window.onload = function() {
     },
     imageOnload: function(image) {
       loading.style.display = 'none'; // 读取中提示信息
-      system.cxt = canvas.getContext('2d');
       system.image = image;
       data.timePrevious = Date.now();
       this.initData();
       this.canvas = new window.Canvas({
+        canvas: canvas,
         width: 800,
         height: 600,
       });
       this.canvas.init();
     },
     initData: function() {
-      console.log('init');
+      this.welcome = new window.Welcome({
+        show: true
+      });
+      this.welcome.init();
     },
   };
 
