@@ -77,7 +77,7 @@ var data = {
 }
 
 window.onload = function() {
-  suitScreen();
+  suitScreen(400, 600);
   resetData();
   imageLoaded();
 }

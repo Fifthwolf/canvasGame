@@ -28,7 +28,7 @@ var data = {
 }
 
 window.onload = function() {
-  suitScreen();
+  suitScreen(800, 600);
   imageLoaded();
 }
 

@@ -5,16 +5,29 @@ Element.prototype['$'] = function(tag) {
 var loading = $('#loading'),
   canvas = $('#canvas');
 
-function suitScreen() {
-  var width = document.documentElement.clientWidth,
-    height = document.documentElement.clientHeight;
-  if (height / width > data.system.height / data.system.width) {
-    data.system.scale = width / data.system.width - 0.1;
+function suitScreen(canvasWidth, canvasHeight) {
+  var WindowWidth = document.documentElement.clientWidth,
+    WindowHeight = document.documentElement.clientHeight;
+  var scale;
+  if (WindowHeight / WindowWidth > canvasHeight / canvasWidth) {
+    scale = WindowWidth / canvasWidth - 0.1;
   } else {
-    data.system.scale = height / data.system.height - 0.1;
+    scale = WindowHeight / canvasHeight - 0.1;
   }
-  data.system.top = (height - data.system.height) / data.system.scale / 2;
-  canvas.style.transform = 'scale(' + data.system.scale + ', ' + data.system.scale + ') translateY(' + data.system.top + 'px)';
+  try {
+    data.system.scale = scale;
+  }
+  catch(e) {
+    //ignore
+  }
+  var top = (WindowHeight - canvasHeight) / scale / 2;
+  try {
+    data.system.top = top;
+  }
+  catch(e) {
+    //ignore
+  }
+  canvas.style.transform = 'scale(' + scale + ', ' + scale + ') translateY(' + top + 'px)';
 }
 
 function addEvent(element, type, handler) {

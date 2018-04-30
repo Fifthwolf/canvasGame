@@ -37,7 +37,7 @@ window.onload = function() {
   } else {
     data.system.mobile = false;
   }
-  suitScreen();
+  suitScreen(640, 480);
   imageLoaded();
 }
 

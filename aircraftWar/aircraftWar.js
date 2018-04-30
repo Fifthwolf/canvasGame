@@ -33,7 +33,7 @@ window.onload = function() {
   } else {
     data.system.mobile = false;
   }
-  suitScreen();
+  suitScreen(400, 600);
   imageLoaded();
 }
 
@@ -907,10 +907,10 @@ function PassThrough() {
             _createSin(num, 5, 720, 1, 2, 10);
             break;
           case 4:
-             _createY(num, 0, 6, 10, 0, 1, 3, 10);
+            _createY(num, 0, 6, 10, 0, 1, 3, 10);
             break;
           case 5:
-             _createY(num, 400, -6, 10, 0, 1, 3, 10);
+            _createY(num, 400, -6, 10, 0, 1, 3, 10);
             break;
           case 6:
             data.element.boss = new Boss({
@@ -987,10 +987,10 @@ function PassThrough() {
             _createSin(num, 5, 720, 1, 2, 10);
             break;
           case 4:
-             _createY(num, 0, 6, 10, 0, 1, 3, 10);
+            _createY(num, 0, 6, 10, 0, 1, 3, 10);
             break;
           case 5:
-             _createY(num, 400, -6, 10, 0, 1, 3, 10);
+            _createY(num, 400, -6, 10, 0, 1, 3, 10);
             break;
           case 6:
             data.element.boss = new Boss({
@@ -1067,10 +1067,10 @@ function PassThrough() {
             _createSin(num, 5, 720, 1, 2, 10);
             break;
           case 4:
-             _createY(num, 0, 6, 10, 0, 1, 3, 10);
+            _createY(num, 0, 6, 10, 0, 1, 3, 10);
             break;
           case 5:
-             _createY(num, 400, -6, 10, 0, 1, 3, 10);
+            _createY(num, 400, -6, 10, 0, 1, 3, 10);
             break;
           case 6:
             data.element.boss = new Boss({
