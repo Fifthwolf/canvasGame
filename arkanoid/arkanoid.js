@@ -19,6 +19,7 @@ window.onload = function() {
     this.r;
     this.vx;
     this.vy;
+    this.run = false;
   }
   Ball.prototype.init = function(options) {
     this.getData();
@@ -31,28 +32,43 @@ window.onload = function() {
   }
   Ball.prototype.getData = function() {
     this.data = window.Data;
+    this.canvas = window.Control.canvas;
     this.brick = window.Control.brick;
     this.baffle = window.Control.baffle;
   }
+  Ball.prototype.ballRun = function() {
+    this.run = true;
+    this.vy = -1;
+  }
   Ball.prototype.move = function() {
-    this.x = this.x + this.vx * this.data.delta;
-    this.y = this.y + this.vy * this.data.delta;
+    this.x = this.x + this.vx * this.data.delta * 0.2;
+    this.y = this.y + this.vy * this.data.delta * 0.2;
   }
   Ball.prototype.collision = function(options) {
     var options = options || {};
     if (options.x) {
       this.vx = -this.vx;
-      this.x = this.x + 2 * this.vx;
+      this.x = this.x + this.vx;
     }
     if (options.y) {
       this.vy = -this.vy;
-      this.y = this.y + 2 * this.vy;
+      this.y = this.y + this.vy;
     }
     if (options.i !== undefined) {
       this.brick.hurt(options.i, options.j);
     }
+    if (options.direction !== undefined) {
+      this.correct(options.direction);
+    }
   }
-  Ball.prototype.correct = function(options) {}
+  Ball.prototype.correct = function(options) {
+    if (options.left) {
+      this.vx -= Math.random() * 0.5;
+    }
+    if (options.right) {
+      this.vx += Math.random() * 0.5;
+    }
+  }
   Ball.prototype.judge = function() {
     this.judgeBrick = function() {
       var arrange = this.brick.arrange;
@@ -140,8 +156,8 @@ window.onload = function() {
       if (this.x <= baffleX1 && this.y <= baffleY1) {
         if ((baffleX1 - this.x) * (baffleX1 - this.x) + (baffleY1 - this.y) * (baffleY1 - this.y) <= (this.r * this.r)) {
           this.collision({
-            x: true,
-            y: true
+            y: true,
+            direction: this.baffle.direction
           });
           return;
         }
@@ -149,8 +165,8 @@ window.onload = function() {
       if (this.x <= baffleX1 && this.y >= baffleY2) {
         if ((baffleX1 - this.x) * (baffleX1 - this.x) + (baffleY2 - this.y) * (baffleY2 - this.y) <= (this.r * this.r)) {
           this.collision({
-            x: true,
-            y: true
+            y: true,
+            direction: this.baffle.direction
           });
           return;
         }
@@ -158,8 +174,8 @@ window.onload = function() {
       if (this.x >= baffleX2 && this.y <= baffleY1) {
         if ((baffleX2 - this.x) * (baffleX2 - this.x) + (baffleY1 - this.y) * (baffleY1 - this.y) <= (this.r * this.r)) {
           this.collision({
-            x: true,
-            y: true
+            y: true,
+            direction: this.baffle.direction
           });
           return;
         }
@@ -167,8 +183,8 @@ window.onload = function() {
       if (this.x >= baffleX2 && this.y >= baffleY2) {
         if ((baffleX2 - this.x) * (baffleX2 - this.x) + (baffleY2 - this.y) * (baffleY2 - this.y) <= (this.r * this.r)) {
           this.collision({
-            x: true,
-            y: true
+            y: true,
+            direction: this.baffle.direction
           });
           return;
         }
@@ -176,7 +192,8 @@ window.onload = function() {
       if (this.x > baffleX1 && this.x < baffleX2) {
         if (this.y >= baffleY1 - this.r && this.y <= baffleY2 + this.r) {
           this.collision({
-            y: true
+            y: true,
+            direction: this.baffle.direction
           });
           return;
         }
@@ -184,14 +201,36 @@ window.onload = function() {
       if (this.y > baffleY1 && this.y < baffleY2) {
         if (this.x >= baffleX1 - this.r && this.x <= baffleX2 + this.r) {
           this.collision({
-            x: true
+            y: true,
+            direction: this.baffle.direction
           });
           return;
         }
       }
     }
+    this.judgeWall = function() {
+      if (this.x - this.r <= 10) {
+        this.collision({
+          x: true,
+        });
+        return;
+      }
+      if (this.x + this.r >= this.canvas.width - 10) {
+        this.collision({
+          x: true,
+        });
+        return;
+      }
+      if (this.y - this.r <= 10) {
+        this.collision({
+          y: true,
+        });
+        return;
+      }
+    }
     this.judgeBrick();
     this.judgeBaffle();
+    this.judgeWall();
   }
   window.Ball = Ball;
 })();
@@ -331,7 +370,7 @@ window.onload = function() {
   function Logic() {
     this.control = window.Control;
     this.launch = function() {
-      this.control.ball.vy = -0.2;
+      this.control.ball.ballRun();
     }.bind(this);
     this.startGame = function() {
       canvas.removeEventListener('click', this.startGame);
@@ -384,7 +423,7 @@ window.onload = function() {
     if (this.baffle) {
       this.baffle.move();
     }
-    if (this.ball) {
+    if (this.ball && this.ball.run) {
       this.ball.move();
       this.ball.judge();
     }
@@ -428,7 +467,7 @@ window.onload = function() {
     }
     this.drawSaveRestore(function() {
       this.cxt.beginPath();
-      this.cxt.fillStyle = '#00f';
+      this.cxt.fillStyle = '#0ff';
       this.cxt.translate(this.ball.x, this.ball.y);
       this.cxt.arc(0, 0, this.ball.r, 0, 2 * Math.PI);
       this.cxt.fill();
