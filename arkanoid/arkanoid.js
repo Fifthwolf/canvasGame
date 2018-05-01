@@ -442,6 +442,14 @@ window.onload = function() {
       this.cxt.fillRect(0, 0, this.width, this.height);
     }.bind(this));
   }
+  Canvas.prototype.drawWall = function() {
+    this.drawSaveRestore(function() {
+      this.cxt.fillStyle = '#f0f';
+      this.cxt.fillRect(0, 0, 10, this.height);
+      this.cxt.fillRect(0, 0, this.width, 10);
+      this.cxt.fillRect(this.width - 10, 0, 10, this.height);
+    }.bind(this));
+  }
   Canvas.prototype.drawBrick = function() {
     if (!this.brick) {
       return;
@@ -510,6 +518,7 @@ window.onload = function() {
     this.getData();
     this.setData();
     this.drawBackground();
+    this.drawWall();
     this.drawBrick();
     this.drawBall();
     this.drawBaffle();
