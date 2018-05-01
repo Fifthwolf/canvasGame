@@ -19,25 +19,56 @@ window.onload = function() {
     this.vx;
     this.vy;
   }
-  Ball.prototype.init = function() {
-    this.x = 400;
-    this.y = 500;
-    this.vx = 0;
-    this.vy = 0;
+  Ball.prototype.init = function(options) {
+    this.getData();
+    var options = options || {};
+    this.x = options.x || 410;
+    this.y = options.y || 490;
+    this.vx = options.vx || 0;
+    this.vy = options.vy || 0;
+  }
+  Ball.prototype.getData = function() {
+    this.data = window.Data;
+  }
+  Ball.prototype.move = function() {
+    this.x = this.x + this.vx * this.data.delta;
+    this.y = this.y + this.vy * this.data.delta;
   }
   window.Ball = Ball;
 })();
 
 // 砖块
 (function() {
+  const RangeArrange = {
+    1: [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    2: [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+  };
+
   function Brick() {
-    this.x;
-    this.y;
-    this.type;
+    this.width = 80;
+    this.height = 30;
+    this.arrange;
   }
-  Brick.prototype.init = function() {
-    this.x;
-    this.y;
+  Brick.prototype.init = function(rank) {
+    this.arrange = RangeArrange[rank];
   }
   window.Brick = Brick;
 })();
@@ -45,9 +76,9 @@ window.onload = function() {
 // 挡板
 (function() {
   function Baffle() {
-    this.x = 400;
+    this.x = 410;
     this.y = 500;
-    this.width = 80;
+    this.width = 100;
     this.height = 10;
     this.moveSpeed = 1;
     this.direction = {
@@ -127,14 +158,22 @@ window.onload = function() {
 (function() {
   function Logic() {
     this.control = window.Control;
+    this.launch = function() {
+      this.control.ball.vy = -0.5;
+    }.bind(this);
     this.startGame = function() {
       canvas.removeEventListener('click', this.startGame);
       // 游戏开始
       this.control.info.InfoData({
         centerTextShow: false
       });
+      this.control.brick = new Brick();
+      this.control.brick.init(1);
       this.control.baffle = new Baffle();
       this.control.baffle.init();
+      this.control.ball = new Ball();
+      this.control.ball.init();
+      canvas.addEventListener('click', this.launch, false);
     }.bind(this);
   }
   Logic.prototype.init = function() {
@@ -159,6 +198,8 @@ window.onload = function() {
   Canvas.prototype.getData = function() {
     this.info = Control.info;
     this.baffle = Control.baffle;
+    this.brick = Control.brick;
+    this.ball = Control.ball;
   }
   Canvas.prototype.setData = function() {
     this.time = function() {
@@ -171,47 +212,82 @@ window.onload = function() {
     if (this.baffle) {
       this.baffle.move();
     }
+    if (this.ball) {
+      this.ball.move();
+    }
+  }
+  Canvas.prototype.drawSaveRestore = function(fn) {
+    this.cxt.save();
+    fn();
+    this.cxt.restore();
   }
   Canvas.prototype.drawBackground = function() {
     var gr = this.cxt.createRadialGradient(this.width / 2, 0, this.height / 2, this.width / 2, 0, this.width);
     gr.addColorStop(0, '#0071ca');
     gr.addColorStop(0.8, '#01062c');
-    this.cxt.fillStyle = gr;
-    this.cxt.fillRect(0, 0, this.width, this.height);
+    this.drawSaveRestore(function() {
+      this.cxt.fillStyle = gr;
+      this.cxt.fillRect(0, 0, this.width, this.height);
+    }.bind(this));
   }
   Canvas.prototype.drawBrick = function() {
-
+    if (!this.brick) {
+      return;
+    }
+    var brick = this.brick,
+      arrange = brick.arrange;
+    for (var i = 0, leni = arrange.length; i < leni; i++) {
+      for (var j = 0, lenj = arrange[i].length; j < lenj; j++) {
+        if (arrange[i][j] >= 1) {
+          this.drawSaveRestore(function() {
+            this.cxt.fillStyle = '#ff0';
+            this.cxt.translate(j * brick.width + brick.width / 2, i * brick.height + 10);
+            this.cxt.fillRect(-brick.height, 0, brick.width, brick.height);
+            this.cxt.strokeRect(-brick.height, 0, brick.width, brick.height);
+          }.bind(this));
+        }
+      }
+    }
   }
   Canvas.prototype.drawBall = function() {
-
+    if (!this.ball) {
+      return;
+    }
+    this.drawSaveRestore(function() {
+      this.cxt.beginPath();
+      this.cxt.fillStyle = '#00f';
+      this.cxt.translate(this.ball.x, this.ball.y);
+      this.cxt.arc(0, 0, 10, 0, 2 * Math.PI);
+      this.cxt.fill();
+    }.bind(this));
   }
   Canvas.prototype.drawBaffle = function() {
     if (!this.baffle) {
       return;
     }
-    this.cxt.save();
-    this.cxt.fillStyle = '#f00';
-    this.cxt.translate(this.baffle.x, this.baffle.y);
-    this.cxt.fillRect(-this.baffle.width / 2, 0, this.baffle.width, this.baffle.height);
-    this.cxt.restore();
+    this.drawSaveRestore(function() {
+      this.cxt.fillStyle = '#f00';
+      this.cxt.translate(this.baffle.x, this.baffle.y);
+      this.cxt.fillRect(-this.baffle.width / 2, 0, this.baffle.width, this.baffle.height);
+    }.bind(this));
   }
   Canvas.prototype.drawInfo = function() {
     this.score = function() {
-      this.cxt.save();
-      this.cxt.fillStyle = '#fff';
-      this.cxt.font = '20px Microsoft YaHei';
-      this.cxt.textAlign = 'left';
-      this.cxt.fillText('SCORE: ' + this.info.score, 40, 40);
-      this.cxt.restore();
+      this.drawSaveRestore(function() {
+        this.cxt.fillStyle = '#fff';
+        this.cxt.font = '20px Microsoft YaHei';
+        this.cxt.textAlign = 'left';
+        this.cxt.fillText('SCORE: ' + this.info.score, 25, 575);
+      }.bind(this));
     }
     this.centerText = function() {
-      this.cxt.save();
-      this.cxt.fillStyle = '#fff';
-      this.cxt.font = '64px Microsoft YaHei';
-      this.cxt.textAlign = 'center';
-      this.cxt.textBaseline = 'middle';
-      this.cxt.fillText(this.info.centerText, 400, 300);
-      this.cxt.restore();
+      this.drawSaveRestore(function() {
+        this.cxt.fillStyle = '#fff';
+        this.cxt.font = '64px Microsoft YaHei';
+        this.cxt.textAlign = 'center';
+        this.cxt.textBaseline = 'middle';
+        this.cxt.fillText(this.info.centerText, 400, 300);
+      }.bind(this));
     }
     this.score();
     if (this.info.centerTextShow) {
@@ -254,7 +330,7 @@ window.onload = function() {
       this.initData();
       this.canvas = new window.Canvas({
         canvas: canvas,
-        width: 800,
+        width: 820,
         height: 600,
       });
       this.canvas.init();
