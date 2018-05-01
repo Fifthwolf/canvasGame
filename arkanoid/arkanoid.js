@@ -1,5 +1,5 @@
 window.onload = function() {
-  suitScreen(800, 600);
+  suitScreen(820, 600);
 };
 
 // 游戏
@@ -16,6 +16,7 @@ window.onload = function() {
   function Ball() {
     this.x;
     this.y;
+    this.r;
     this.vx;
     this.vy;
   }
@@ -24,15 +25,173 @@ window.onload = function() {
     var options = options || {};
     this.x = options.x || 410;
     this.y = options.y || 490;
+    this.r = options.r || 10;
     this.vx = options.vx || 0;
     this.vy = options.vy || 0;
   }
   Ball.prototype.getData = function() {
     this.data = window.Data;
+    this.brick = window.Control.brick;
+    this.baffle = window.Control.baffle;
   }
   Ball.prototype.move = function() {
     this.x = this.x + this.vx * this.data.delta;
     this.y = this.y + this.vy * this.data.delta;
+  }
+  Ball.prototype.collision = function(options) {
+    var options = options || {};
+    if (options.x) {
+      this.vx = -this.vx;
+      this.x = this.x + 2 * this.vx;
+    }
+    if (options.y) {
+      this.vy = -this.vy;
+      this.y = this.y + 2 * this.vy;
+    }
+    if (options.i !== undefined) {
+      this.brick.hurt(options.i, options.j);
+    }
+  }
+  Ball.prototype.correct = function(options) {}
+  Ball.prototype.judge = function() {
+    this.judgeBrick = function() {
+      var arrange = this.brick.arrange;
+      for (var i = 0, leni = arrange.length; i < leni; i++) {
+        for (var j = 0, lenj = arrange[i].length; j < lenj; j++) {
+          if (arrange[i][j] === 0) {
+            continue;
+          }
+          var brickX1 = j * this.brick.width + 10,
+            brickX2 = j * this.brick.width + this.brick.width + 10,
+            brickY1 = i * this.brick.height + 10,
+            brickY2 = i * this.brick.height + this.brick.height + 10;
+          if (this.x <= brickX1 && this.y <= brickY1) {
+            if ((brickX1 - this.x) * (brickX1 - this.x) + (brickY1 - this.y) * (brickY1 - this.y) <= (this.r * this.r)) {
+              this.collision({
+                x: true,
+                y: true,
+                i: i,
+                j: j
+              });
+              return;
+            }
+          }
+          if (this.x <= brickX1 && this.y >= brickY2) {
+            if ((brickX1 - this.x) * (brickX1 - this.x) + (brickY2 - this.y) * (brickY2 - this.y) <= (this.r * this.r)) {
+              this.collision({
+                x: true,
+                y: true,
+                i: i,
+                j: j
+              });
+              return;
+            }
+          }
+          if (this.x >= brickX2 && this.y <= brickY1) {
+            if ((brickX2 - this.x) * (brickX2 - this.x) + (brickY1 - this.y) * (brickY1 - this.y) <= (this.r * this.r)) {
+              this.collision({
+                x: true,
+                y: true,
+                i: i,
+                j: j
+              });
+              return;
+            }
+          }
+          if (this.x >= brickX2 && this.y >= brickY2) {
+            if ((brickX2 - this.x) * (brickX2 - this.x) + (brickY2 - this.y) * (brickY2 - this.y) <= (this.r * this.r)) {
+              this.collision({
+                x: true,
+                y: true,
+                i: i,
+                j: j
+              });
+              return;
+            }
+          }
+          if (this.x > brickX1 && this.x < brickX2) {
+            if (this.y >= brickY1 - this.r && this.y <= brickY2 + this.r) {
+              this.collision({
+                y: true,
+                i: i,
+                j: j
+              });
+              return;
+            }
+          }
+          if (this.y > brickY1 && this.y < brickY2) {
+            if (this.x >= brickX1 - this.r && this.x <= brickX2 + this.r) {
+              this.collision({
+                x: true,
+                i: i,
+                j: j
+              });
+              return;
+            }
+          }
+        }
+      }
+    }
+    this.judgeBaffle = function() {
+      var baffleX1 = this.baffle.x - this.baffle.width / 2,
+        baffleX2 = this.baffle.x + this.baffle.width / 2,
+        baffleY1 = this.baffle.y,
+        baffleY2 = this.baffle.y + this.baffle.height;
+      if (this.x <= baffleX1 && this.y <= baffleY1) {
+        if ((baffleX1 - this.x) * (baffleX1 - this.x) + (baffleY1 - this.y) * (baffleY1 - this.y) <= (this.r * this.r)) {
+          this.collision({
+            x: true,
+            y: true
+          });
+          return;
+        }
+      }
+      if (this.x <= baffleX1 && this.y >= baffleY2) {
+        if ((baffleX1 - this.x) * (baffleX1 - this.x) + (baffleY2 - this.y) * (baffleY2 - this.y) <= (this.r * this.r)) {
+          this.collision({
+            x: true,
+            y: true
+          });
+          return;
+        }
+      }
+      if (this.x >= baffleX2 && this.y <= baffleY1) {
+        if ((baffleX2 - this.x) * (baffleX2 - this.x) + (baffleY1 - this.y) * (baffleY1 - this.y) <= (this.r * this.r)) {
+          this.collision({
+            x: true,
+            y: true
+          });
+          return;
+        }
+      }
+      if (this.x >= baffleX2 && this.y >= baffleY2) {
+        if ((baffleX2 - this.x) * (baffleX2 - this.x) + (baffleY2 - this.y) * (baffleY2 - this.y) <= (this.r * this.r)) {
+          this.collision({
+            x: true,
+            y: true
+          });
+          return;
+        }
+      }
+      if (this.x > baffleX1 && this.x < baffleX2) {
+        if (this.y >= baffleY1 - this.r && this.y <= baffleY2 + this.r) {
+          this.collision({
+            y: true
+          });
+          return;
+        }
+      }
+      if (this.y > baffleY1 && this.y < baffleY2) {
+        if (this.x >= baffleX1 - this.r && this.x <= baffleX2 + this.r) {
+          this.collision({
+            x: true
+          });
+          return;
+        }
+      }
+    }
+    this.judgeBrick();
+    this.judgeBaffle();
   }
   window.Ball = Ball;
 })();
@@ -60,6 +219,16 @@ window.onload = function() {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ],
+    3: [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+    ]
   };
 
   function Brick() {
@@ -69,6 +238,9 @@ window.onload = function() {
   }
   Brick.prototype.init = function(rank) {
     this.arrange = RangeArrange[rank];
+  }
+  Brick.prototype.hurt = function(i, j) {
+    this.arrange[i][j]--;
   }
   window.Brick = Brick;
 })();
@@ -159,7 +331,7 @@ window.onload = function() {
   function Logic() {
     this.control = window.Control;
     this.launch = function() {
-      this.control.ball.vy = -0.5;
+      this.control.ball.vy = -0.2;
     }.bind(this);
     this.startGame = function() {
       canvas.removeEventListener('click', this.startGame);
@@ -214,6 +386,7 @@ window.onload = function() {
     }
     if (this.ball) {
       this.ball.move();
+      this.ball.judge();
     }
   }
   Canvas.prototype.drawSaveRestore = function(fn) {
@@ -257,7 +430,7 @@ window.onload = function() {
       this.cxt.beginPath();
       this.cxt.fillStyle = '#00f';
       this.cxt.translate(this.ball.x, this.ball.y);
-      this.cxt.arc(0, 0, 10, 0, 2 * Math.PI);
+      this.cxt.arc(0, 0, this.ball.r, 0, 2 * Math.PI);
       this.cxt.fill();
     }.bind(this));
   }
