@@ -2,17 +2,6 @@ window.onload = function() {
   suitScreen(800, 600);
 };
 
-// 欢迎界面
-(function() {
-  function Welcome(options) {
-    this.show = options.show || false;
-  }
-  Welcome.prototype.init = function() {
-    
-  }
-  window.Welcome = Welcome;
-})();
-
 // 游戏
 (function() {
   function Game() {
@@ -53,6 +42,49 @@ window.onload = function() {
   window.Brick = Brick;
 })();
 
+// 砖块
+(function() {
+  function Baffle() {
+    this.x;
+    this.y;
+  }
+  Baffle.prototype.init = function() {
+    this.x;
+    this.y;
+  }
+  window.Baffle = Baffle;
+})();
+
+// 信息
+(function() {
+  function Info(options) {
+    this.score = options.score || 0;
+    this.centerText = options.centerText || '';
+    this.show = options.show || false;
+  }
+  Info.prototype.init = function() {
+
+  }
+  Info.prototype.addScore = function(value) {
+    this.score += value;
+  }
+  window.Info = Info;
+})();
+
+// 控制
+(function() {
+  function Logic() {
+    var self = this;
+    this.startGame = function() {
+      canvas.removeEventListener('click', self.startGame);
+    }
+  }
+  Logic.prototype.init = function() {
+    canvas.addEventListener('click', this.startGame, false);
+  }
+  window.Logic = Logic;
+})();
+
 // 绘制
 (function() {
   function Canvas(options) {
@@ -64,7 +96,11 @@ window.onload = function() {
   Canvas.prototype.init = function() {
     this.canvas.width = this.width;
     this.canvas.height = this.height;
+    this.getData();
     this.draw();
+  }
+  Canvas.prototype.getData = function() {
+    this.info = Control.info;
   }
   Canvas.prototype.drawBackground = function() {
     var gr = this.cxt.createRadialGradient(this.width / 2, 0, this.height / 2, this.width / 2, 0, this.width);
@@ -79,13 +115,35 @@ window.onload = function() {
   Canvas.prototype.drawBall = function() {
 
   }
-  Canvas.prototype.drawInfo = function() {
+  Canvas.prototype.drawBaffle = function() {
 
+  }
+  Canvas.prototype.drawInfo = function() {
+    this.score = function() {
+      this.cxt.save();
+      this.cxt.fillStyle = '#fff';
+      this.cxt.font = '20px Microsoft YaHei';
+      this.cxt.textAlign = 'left';
+      this.cxt.fillText('SCORE: ' + this.info.score, 40, 40);
+      this.cxt.restore();
+    }
+    this.centerTip = function() {
+      this.cxt.save();
+      this.cxt.fillStyle = '#fff';
+      this.cxt.font = '64px Microsoft YaHei';
+      this.cxt.textAlign = 'center';
+      this.cxt.textBaseline = 'middle';
+      this.cxt.fillText(this.info.centerText, 400, 300);
+      this.cxt.restore();
+    }
+    this.score();
+    this.centerTip();
   }
   Canvas.prototype.draw = function() {
     this.drawBackground();
     this.drawBrick();
     this.drawBall();
+    this.drawBaffle();
     this.drawInfo();
     requestAnimationFrame(this.draw.bind(this));
   }
@@ -122,10 +180,13 @@ window.onload = function() {
       this.canvas.init();
     },
     initData: function() {
-      this.welcome = new window.Welcome({
-        show: true
+      this.logic = new window.Logic();
+      this.logic.init();
+      this.info = new window.Info({
+        score: 0,
+        centerText: '点击开始游戏'
       });
-      this.welcome.init();
+      this.info.init();
     },
   };
 
