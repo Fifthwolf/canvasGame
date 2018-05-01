@@ -42,15 +42,61 @@ window.onload = function() {
   window.Brick = Brick;
 })();
 
-// 砖块
+// 挡板
 (function() {
   function Baffle() {
-    this.x;
-    this.y;
+    this.x = 400;
+    this.y = 500;
+    this.width = 80;
+    this.height = 10;
+    this.moveSpeed = 1;
+    this.direction = {
+      left: false,
+      right: false
+    };
+    this.moveStart = function(e) {
+      var e = e || window.e || arguments.callee.caller.arguments[0];
+      switch (e && e.keyCode) {
+        case 65:
+          this.direction.left = true;
+          break;
+        case 68:
+          this.direction.right = true;
+          break;
+      }
+    }.bind(this);
+    this.moveEnd = function(e) {
+      var e = e || window.e || arguments.callee.caller.arguments[0];
+      switch (e && e.keyCode) {
+        case 65:
+          this.direction.left = false;
+          break;
+        case 68:
+          this.direction.right = false;
+          break;
+      }
+    }.bind(this);
   }
   Baffle.prototype.init = function() {
-    this.x;
-    this.y;
+    this.getData();
+    document.addEventListener('keydown', this.moveStart, false);
+    document.addEventListener('keyup', this.moveEnd, false);
+  }
+  Baffle.prototype.getData = function() {
+    this.data = window.Data;
+    this.control = window.Control;
+  }
+  Baffle.prototype.move = function() {
+    if (this.direction.left == this.direction.right) {
+      return;
+    }
+    if (this.direction.left) {
+      this.x -= this.moveSpeed * this.data.delta;
+    }
+    if (this.direction.right) {
+      this.x += this.moveSpeed * this.data.delta;
+    }
+    this.x = Math.max(this.width / 2, Math.min(this.control.canvas.width - this.width / 2, this.x));
   }
   window.Baffle = Baffle;
 })();
@@ -59,11 +105,17 @@ window.onload = function() {
 (function() {
   function Info(options) {
     this.score = options.score || 0;
+    this.centerTextShow = options.centerTextShow || false;
     this.centerText = options.centerText || '';
     this.show = options.show || false;
   }
   Info.prototype.init = function() {
 
+  }
+  Info.prototype.InfoData = function(options) {
+    for (var property in options) {
+      this[property] = options[property];
+    }
   }
   Info.prototype.addScore = function(value) {
     this.score += value;
@@ -74,10 +126,16 @@ window.onload = function() {
 // 控制
 (function() {
   function Logic() {
-    var self = this;
+    this.control = window.Control;
     this.startGame = function() {
-      canvas.removeEventListener('click', self.startGame);
-    }
+      canvas.removeEventListener('click', this.startGame);
+      // 游戏开始
+      this.control.info.InfoData({
+        centerTextShow: false
+      });
+      this.control.baffle = new Baffle();
+      this.control.baffle.init();
+    }.bind(this);
   }
   Logic.prototype.init = function() {
     canvas.addEventListener('click', this.startGame, false);
@@ -96,11 +154,23 @@ window.onload = function() {
   Canvas.prototype.init = function() {
     this.canvas.width = this.width;
     this.canvas.height = this.height;
-    this.getData();
     this.draw();
   }
   Canvas.prototype.getData = function() {
     this.info = Control.info;
+    this.baffle = Control.baffle;
+  }
+  Canvas.prototype.setData = function() {
+    this.time = function() {
+      this.data = window.Data;
+      this.now = Date.now();
+      this.data.delta = Math.min(50, this.now - this.data.timePrevious);
+      this.data.timePrevious = this.now;
+    }
+    this.time();
+    if (this.baffle) {
+      this.baffle.move();
+    }
   }
   Canvas.prototype.drawBackground = function() {
     var gr = this.cxt.createRadialGradient(this.width / 2, 0, this.height / 2, this.width / 2, 0, this.width);
@@ -116,7 +186,14 @@ window.onload = function() {
 
   }
   Canvas.prototype.drawBaffle = function() {
-
+    if (!this.baffle) {
+      return;
+    }
+    this.cxt.save();
+    this.cxt.fillStyle = '#f00';
+    this.cxt.translate(this.baffle.x, this.baffle.y);
+    this.cxt.fillRect(-this.baffle.width / 2, 0, this.baffle.width, this.baffle.height);
+    this.cxt.restore();
   }
   Canvas.prototype.drawInfo = function() {
     this.score = function() {
@@ -127,7 +204,7 @@ window.onload = function() {
       this.cxt.fillText('SCORE: ' + this.info.score, 40, 40);
       this.cxt.restore();
     }
-    this.centerTip = function() {
+    this.centerText = function() {
       this.cxt.save();
       this.cxt.fillStyle = '#fff';
       this.cxt.font = '64px Microsoft YaHei';
@@ -137,9 +214,13 @@ window.onload = function() {
       this.cxt.restore();
     }
     this.score();
-    this.centerTip();
+    if (this.info.centerTextShow) {
+      this.centerText();
+    }
   }
   Canvas.prototype.draw = function() {
+    this.getData();
+    this.setData();
     this.drawBackground();
     this.drawBrick();
     this.drawBall();
@@ -170,7 +251,6 @@ window.onload = function() {
     imageOnload: function(image) {
       loading.style.display = 'none'; // 读取中提示信息
       system.image = image;
-      data.timePrevious = Date.now();
       this.initData();
       this.canvas = new window.Canvas({
         canvas: canvas,
@@ -184,6 +264,7 @@ window.onload = function() {
       this.logic.init();
       this.info = new window.Info({
         score: 0,
+        centerTextShow: true,
         centerText: '点击开始游戏'
       });
       this.info.init();
