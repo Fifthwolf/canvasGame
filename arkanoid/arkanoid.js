@@ -35,6 +35,7 @@ window.onload = function() {
     this.canvas = window.Control.canvas;
     this.brick = window.Control.brick;
     this.baffle = window.Control.baffle;
+    this.info = window.Control.info;
   }
   Ball.prototype.ballRun = function() {
     this.run = true;
@@ -63,6 +64,9 @@ window.onload = function() {
     if (options.direction !== undefined) {
       this.correct(options.direction);
     }
+    if (options.score !== undefined) {
+      this.info.addScore(options.score);
+    }
   }
   Ball.prototype.correct = function(options) {
     if (options.left) {
@@ -90,7 +94,8 @@ window.onload = function() {
                 x: true,
                 y: true,
                 i: i,
-                j: j
+                j: j,
+                score: arrange[i][j] * 10
               });
               return;
             }
@@ -101,7 +106,8 @@ window.onload = function() {
                 x: true,
                 y: true,
                 i: i,
-                j: j
+                j: j,
+                score: arrange[i][j] * 10
               });
               return;
             }
@@ -112,7 +118,8 @@ window.onload = function() {
                 x: true,
                 y: true,
                 i: i,
-                j: j
+                j: j,
+                score: arrange[i][j] * 10
               });
               return;
             }
@@ -123,7 +130,8 @@ window.onload = function() {
                 x: true,
                 y: true,
                 i: i,
-                j: j
+                j: j,
+                score: arrange[i][j] * 10
               });
               return;
             }
@@ -133,7 +141,8 @@ window.onload = function() {
               this.collision({
                 y: true,
                 i: i,
-                j: j
+                j: j,
+                score: arrange[i][j] * 10
               });
               return;
             }
@@ -143,7 +152,8 @@ window.onload = function() {
               this.collision({
                 x: true,
                 i: i,
-                j: j
+                j: j,
+                score: arrange[i][j] * 10
               });
               return;
             }
@@ -155,8 +165,8 @@ window.onload = function() {
       var baffleX1 = this.baffle.x - this.baffle.width / 2,
         baffleX2 = this.baffle.x + this.baffle.width / 2,
         baffleY1 = this.baffle.y,
-        baffleY2 = this.baffle.y + this.baffle.height;
-      /*
+        baffleY2 = this.baffle.y + this.baffle.height,
+        direction = this.baffle.direction;
       if (this.x <= baffleX1 && this.y <= baffleY1) {
         if ((baffleX1 - this.x) * (baffleX1 - this.x) + (baffleY1 - this.y) * (baffleY1 - this.y) <= (this.r * this.r)) {
           this.collision({
@@ -192,31 +202,32 @@ window.onload = function() {
           });
           return;
         }
-      }*/
-      if (this.x >= baffleX1 && this.x <= baffleX2) {
-        if (this.y >= baffleY1 - this.r && this.y <= baffleY2 + this.r) {
+      }
+      if (this.x > baffleX1 && this.x < baffleX2) {
+        if (this.y >= baffleY1 - this.r && this.y < baffleY2) {
           this.collision({
             y: true,
-            direction: this.baffle.direction
+            direction: direction
           });
           return;
         }
       }
+      /*
       if (this.y >= baffleY1 && this.y <= baffleY2) {
         let spaceY = Math.pow((this.y - baffleY1 - this.baffle.height / 2), 2),
           spaceR = Math.pow((this.r + this.baffle.height / 2), 2);
         if (this.x <= baffleX1) {
-          if ((this.x - baffleX1) * (this.x - baffleX1) + spaceY < spaceR) {
+          if ((this.x - baffleX1) * (this.x - baffleX1) + spaceY <= spaceR) {
             // 左边彭
           }
         }
         if (this.x >= baffleX2) {
-          if ((this.x - baffleX2) * (this.x - baffleX2) + spaceY < spaceR) {
+          if ((this.x - baffleX2) * (this.x - baffleX2) + spaceY <= spaceR) {
             // 右边彭
           }
         }
       }
-      /*
+      
       if (this.y > baffleY1 && this.y < baffleY2) {
         if (this.x >= baffleX1 - this.r && this.x <= baffleX2 + this.r) {
           this.collision({
@@ -507,12 +518,10 @@ window.onload = function() {
       return;
     }
     this.drawSaveRestore(function() {
+      this.cxt.beginPath();
       this.cxt.fillStyle = '#f00';
       this.cxt.translate(this.baffle.x, this.baffle.y);
       this.cxt.fillRect(-this.baffle.width / 2, 0, this.baffle.width, this.baffle.height);
-      this.cxt.beginPath();
-      this.cxt.arc(-this.baffle.width / 2, this.baffle.height / 2, this.baffle.height / 2, 0.5 * Math.PI, 1.5 * Math.PI);
-      this.cxt.arc(this.baffle.width / 2, this.baffle.height / 2, this.baffle.height / 2, -0.5 * Math.PI, 0.5 * Math.PI);
       this.cxt.fill();
     }.bind(this));
   }
