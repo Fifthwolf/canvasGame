@@ -44,6 +44,9 @@ window.onload = function() {
     this.x = this.x + this.vx * this.data.delta * 0.2;
     this.y = this.y + this.vy * this.data.delta * 0.2;
   }
+  Ball.prototype.translation = function(value) {
+    this.x += value;
+  }
   Ball.prototype.collision = function(options) {
     var options = options || {};
     if (options.x) {
@@ -153,6 +156,7 @@ window.onload = function() {
         baffleX2 = this.baffle.x + this.baffle.width / 2,
         baffleY1 = this.baffle.y,
         baffleY2 = this.baffle.y + this.baffle.height;
+      /*
       if (this.x <= baffleX1 && this.y <= baffleY1) {
         if ((baffleX1 - this.x) * (baffleX1 - this.x) + (baffleY1 - this.y) * (baffleY1 - this.y) <= (this.r * this.r)) {
           this.collision({
@@ -188,8 +192,8 @@ window.onload = function() {
           });
           return;
         }
-      }
-      if (this.x > baffleX1 && this.x < baffleX2) {
+      }*/
+      if (this.x >= baffleX1 && this.x <= baffleX2) {
         if (this.y >= baffleY1 - this.r && this.y <= baffleY2 + this.r) {
           this.collision({
             y: true,
@@ -198,6 +202,21 @@ window.onload = function() {
           return;
         }
       }
+      if (this.y >= baffleY1 && this.y <= baffleY2) {
+        let spaceY = Math.pow((this.y - baffleY1 - this.baffle.height / 2), 2),
+          spaceR = Math.pow((this.r + this.baffle.height / 2), 2);
+        if (this.x <= baffleX1) {
+          if ((this.x - baffleX1) * (this.x - baffleX1) + spaceY < spaceR) {
+            // 左边彭
+          }
+        }
+        if (this.x >= baffleX2) {
+          if ((this.x - baffleX2) * (this.x - baffleX2) + spaceY < spaceR) {
+            // 右边彭
+          }
+        }
+      }
+      /*
       if (this.y > baffleY1 && this.y < baffleY2) {
         if (this.x >= baffleX1 - this.r && this.x <= baffleX2 + this.r) {
           this.collision({
@@ -206,7 +225,7 @@ window.onload = function() {
           });
           return;
         }
-      }
+      }*/
     }
     this.judgeWall = function() {
       if (this.x - this.r <= 10) {
@@ -290,7 +309,7 @@ window.onload = function() {
     this.x = 410;
     this.y = 500;
     this.width = 100;
-    this.height = 10;
+    this.height = 15;
     this.moveSpeed = 1;
     this.direction = {
       left: false,
@@ -332,11 +351,13 @@ window.onload = function() {
     if (this.direction.left == this.direction.right) {
       return;
     }
+    var distance = this.moveSpeed * this.data.delta;
     if (this.direction.left) {
-      this.x -= this.moveSpeed * this.data.delta;
+      distance = -distance;
     }
-    if (this.direction.right) {
-      this.x += this.moveSpeed * this.data.delta;
+    this.x += distance;
+    if (!this.control.ball.run) {
+      this.control.ball.translation(distance);
     }
     this.x = Math.max(this.width / 2, Math.min(this.control.canvas.width - this.width / 2, this.x));
   }
@@ -489,6 +510,10 @@ window.onload = function() {
       this.cxt.fillStyle = '#f00';
       this.cxt.translate(this.baffle.x, this.baffle.y);
       this.cxt.fillRect(-this.baffle.width / 2, 0, this.baffle.width, this.baffle.height);
+      this.cxt.beginPath();
+      this.cxt.arc(-this.baffle.width / 2, this.baffle.height / 2, this.baffle.height / 2, 0.5 * Math.PI, 1.5 * Math.PI);
+      this.cxt.arc(this.baffle.width / 2, this.baffle.height / 2, this.baffle.height / 2, -0.5 * Math.PI, 0.5 * Math.PI);
+      this.cxt.fill();
     }.bind(this));
   }
   Canvas.prototype.drawInfo = function() {
