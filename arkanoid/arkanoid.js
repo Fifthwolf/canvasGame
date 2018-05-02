@@ -402,6 +402,7 @@ window.onload = function() {
   function Logic() {
     this.control = window.Control;
     this.launch = function() {
+      canvas.removeEventListener('click', this.launch);
       this.control.ball.ballRun();
     }.bind(this);
     this.startGame = function() {
