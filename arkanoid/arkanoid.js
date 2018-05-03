@@ -13,6 +13,9 @@ window.onload = function() {
 
 // 球
 (function() {
+  const maxVelocity = 4,
+    minVy = 0.5;
+
   function Ball() {
     this.x;
     this.y;
@@ -44,9 +47,28 @@ window.onload = function() {
   Ball.prototype.move = function() {
     this.x = this.x + this.vx * this.data.delta * 0.2;
     this.y = this.y + this.vy * this.data.delta * 0.2;
+    this.speedLimit();
   }
   Ball.prototype.translation = function(value) {
     this.x += value;
+    this.speedLimit();
+  }
+  Ball.prototype.speedLimit = function() {
+    let velocitySquared = this.vx * this.vx + this.vy * this.vy,
+      maxVelocitySquared = maxVelocity * maxVelocity;
+    if (velocitySquared <= maxVelocitySquared) {
+      return;
+    }
+    let k = Math.sqrt(velocitySquared / maxVelocitySquared);
+    this.vx /= k;
+    this.vy /= k;
+    if (Math.abs(this.vy) < minVy) {
+      let maxVx = Math.sqrt(maxVelocitySquared - minVy * minVy)
+      this.vy = this.vy > 0 ? minVy : -minVy;
+      if (Math.abs(this.vx) > maxVx) {
+        this.vx = this.vx > 0 ? maxVx : -maxVx;
+      }
+    }
   }
   Ball.prototype.collision = function(options) {
     var options = options || {};
@@ -70,10 +92,11 @@ window.onload = function() {
   }
   Ball.prototype.correct = function(options) {
     if (options.left) {
-      this.vx -= Math.random() * 0.5;
-    }
-    if (options.right) {
-      this.vx += Math.random() * 0.5;
+      this.vx -= Math.random() * 2;
+    } else if (options.right) {
+      this.vx += Math.random() * 2;
+    } else {
+      this.vx += Math.random() - 0.5;
     }
   }
   Ball.prototype.judge = function() {
