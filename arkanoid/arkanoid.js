@@ -167,44 +167,8 @@ window.onload = function() {
         baffleY1 = this.baffle.y,
         baffleY2 = this.baffle.y + this.baffle.height,
         direction = this.baffle.direction;
-      if (this.x <= baffleX1 && this.y <= baffleY1) {
-        if ((baffleX1 - this.x) * (baffleX1 - this.x) + (baffleY1 - this.y) * (baffleY1 - this.y) <= (this.r * this.r)) {
-          this.collision({
-            y: true,
-            direction: this.baffle.direction
-          });
-          return;
-        }
-      }
-      if (this.x <= baffleX1 && this.y >= baffleY2) {
-        if ((baffleX1 - this.x) * (baffleX1 - this.x) + (baffleY2 - this.y) * (baffleY2 - this.y) <= (this.r * this.r)) {
-          this.collision({
-            y: true,
-            direction: this.baffle.direction
-          });
-          return;
-        }
-      }
-      if (this.x >= baffleX2 && this.y <= baffleY1) {
-        if ((baffleX2 - this.x) * (baffleX2 - this.x) + (baffleY1 - this.y) * (baffleY1 - this.y) <= (this.r * this.r)) {
-          this.collision({
-            y: true,
-            direction: this.baffle.direction
-          });
-          return;
-        }
-      }
-      if (this.x >= baffleX2 && this.y >= baffleY2) {
-        if ((baffleX2 - this.x) * (baffleX2 - this.x) + (baffleY2 - this.y) * (baffleY2 - this.y) <= (this.r * this.r)) {
-          this.collision({
-            y: true,
-            direction: this.baffle.direction
-          });
-          return;
-        }
-      }
-      if (this.x > baffleX1 && this.x < baffleX2) {
-        if (this.y >= baffleY1 - this.r && this.y < baffleY2) {
+      if (this.x >= baffleX1 - this.r && this.x <= baffleX2 + this.r) {
+        if (this.y >= baffleY1 - this.r && this.y < baffleY2 - this.r) {
           this.collision({
             y: true,
             direction: direction
@@ -212,31 +176,22 @@ window.onload = function() {
           return;
         }
       }
-      /*
-      if (this.y >= baffleY1 && this.y <= baffleY2) {
-        let spaceY = Math.pow((this.y - baffleY1 - this.baffle.height / 2), 2),
-          spaceR = Math.pow((this.r + this.baffle.height / 2), 2);
-        if (this.x <= baffleX1) {
-          if ((this.x - baffleX1) * (this.x - baffleX1) + spaceY <= spaceR) {
-            // 左边彭
-          }
-        }
-        if (this.x >= baffleX2) {
-          if ((this.x - baffleX2) * (this.x - baffleX2) + spaceY <= spaceR) {
-            // 右边彭
-          }
-        }
-      }
-      
-      if (this.y > baffleY1 && this.y < baffleY2) {
-        if (this.x >= baffleX1 - this.r && this.x <= baffleX2 + this.r) {
+      if (this.y > baffleY1 - this.r && this.y < baffleY2 + this.r / 2) {
+        if (this.x >= baffleX1 - this.r && this.x <= baffleX2 - this.baffle.width / 2) {
           this.collision({
-            y: true,
-            direction: this.baffle.direction
+            x: true,
+            direction: direction
           });
           return;
         }
-      }*/
+        if (this.x <= baffleX2 + this.r && this.x >= baffleX1 + this.baffle.width / 2) {
+          this.collision({
+            x: true,
+            direction: direction
+          });
+          return;
+        }
+      }
     }
     this.judgeWall = function() {
       if (this.x - this.r <= 10) {
