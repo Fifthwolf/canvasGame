@@ -13,7 +13,7 @@ window.onload = function() {
 
 // 球
 (function() {
-  const maxVelocity = 4,
+  const maxVelocity = 3,
     minVy = 0.5;
 
   function Ball() {
@@ -246,7 +246,7 @@ window.onload = function() {
 // 砖块
 (function() {
   const RangeArrange = {
-    1: [
+    0: [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -256,7 +256,7 @@ window.onload = function() {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ],
-    2: [
+    1: [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -264,7 +264,7 @@ window.onload = function() {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 1]
     ],
     3: [
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -418,6 +418,7 @@ window.onload = function() {
     this.draw();
   }
   Canvas.prototype.getData = function() {
+    this.image = System.image;
     this.info = Control.info;
     this.baffle = Control.baffle;
     this.brick = Control.brick;
@@ -455,7 +456,7 @@ window.onload = function() {
   }
   Canvas.prototype.drawWall = function() {
     this.drawSaveRestore(function() {
-      this.cxt.fillStyle = '#f0f';
+      this.cxt.fillStyle = '#444';
       this.cxt.fillRect(0, 0, 10, this.height);
       this.cxt.fillRect(0, 0, this.width, 10);
       this.cxt.fillRect(this.width - 10, 0, 10, this.height);
@@ -471,7 +472,34 @@ window.onload = function() {
       for (var j = 0, lenj = arrange[i].length; j < lenj; j++) {
         if (arrange[i][j] >= 1) {
           this.drawSaveRestore(function() {
-            this.cxt.fillStyle = '#ff0';
+            switch (arrange[i][j]) {
+              case 1:
+                this.cxt.fillStyle = '#f00';
+                break;
+              case 2:
+                this.cxt.fillStyle = '#0f0';
+                break;
+              case 3:
+                this.cxt.fillStyle = '#00f';
+                break;
+              case 4:
+                this.cxt.fillStyle = '#333';
+                break;
+              case 5:
+                this.cxt.fillStyle = '#ff0';
+                break;
+              case 6:
+                this.cxt.fillStyle = '#f0f';
+                break;
+              case 7:
+                this.cxt.fillStyle = '#0ff';
+                break;
+              case 8:
+                this.cxt.fillStyle = '#fff';
+                break;
+              default:
+                this.cxt.fillStyle = '#ccc';
+            }
             this.cxt.translate(j * brick.width + brick.width / 2, i * brick.height + 10);
             this.cxt.fillRect(-brick.height, 0, brick.width, brick.height);
             this.cxt.strokeRect(-brick.height, 0, brick.width, brick.height);
@@ -486,8 +514,11 @@ window.onload = function() {
     }
     this.drawSaveRestore(function() {
       this.cxt.beginPath();
-      this.cxt.fillStyle = '#0ff';
       this.cxt.translate(this.ball.x, this.ball.y);
+      var gr = this.cxt.createRadialGradient(0, 0, this.ball.r / 3, 0, 0, this.ball.r);
+      gr.addColorStop(0, '#fff');
+      gr.addColorStop(1, '#555');
+      this.cxt.fillStyle = gr;
       this.cxt.arc(0, 0, this.ball.r, 0, 2 * Math.PI);
       this.cxt.fill();
     }.bind(this));
@@ -497,10 +528,11 @@ window.onload = function() {
       return;
     }
     this.drawSaveRestore(function() {
-      this.cxt.beginPath();
-      this.cxt.fillStyle = '#f00';
       this.cxt.translate(this.baffle.x, this.baffle.y);
-      this.cxt.fillRect(-this.baffle.width / 2, 0, this.baffle.width, this.baffle.height);
+      this.cxt.drawImage(this.image, 0, 0, this.baffle.width / this.baffle.height * 30, 30, -this.baffle.width / 2, 0, this.baffle.width, this.baffle.height);
+      this.cxt.beginPath();
+      this.cxt.strokeStyle = '#000';
+      this.cxt.strokeRect(-this.baffle.width / 2, 0, this.baffle.width, this.baffle.height)
       this.cxt.fill();
     }.bind(this));
   }
