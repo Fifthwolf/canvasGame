@@ -39,6 +39,7 @@ window.onload = function() {
     this.brick = window.Control.brick;
     this.baffle = window.Control.baffle;
     this.info = window.Control.info;
+    this.logic = window.Control.logic;
   }
   Ball.prototype.ballRun = function() {
     this.run = true;
@@ -236,9 +237,16 @@ window.onload = function() {
         return;
       }
     }
+    this.judgeFail = function() {
+      if (this.y > this.canvas.height + this.r) {
+        this.run = false;
+        this.logic.gameOver();
+      }
+    }
     this.judgeBrick();
     this.judgeBaffle();
     this.judgeWall();
+    this.judgeFail();
   }
   window.Ball = Ball;
 })();
@@ -357,6 +365,7 @@ window.onload = function() {
 (function() {
   function Info(options) {
     this.score = options.score || 0;
+    this.centerTextFontSize = options.centerTextFontSize || 64;
     this.centerTextShow = options.centerTextShow || false;
     this.centerText = options.centerText || '';
     this.show = options.show || false;
@@ -378,15 +387,18 @@ window.onload = function() {
 // 控制
 (function() {
   function Logic() {
-    this.control = window.Control;
+    this.init();
+
     this.launch = function() {
       canvas.removeEventListener('click', this.launch);
       this.control.ball.ballRun();
     }.bind(this);
+
     this.startGame = function() {
       canvas.removeEventListener('click', this.startGame);
       // 游戏开始
       this.control.info.InfoData({
+        score: 0,
         centerTextShow: false
       });
       this.control.brick = new Brick();
@@ -399,7 +411,20 @@ window.onload = function() {
     }.bind(this);
   }
   Logic.prototype.init = function() {
+    this.control = window.Control;
     canvas.addEventListener('click', this.startGame, false);
+  }
+  Logic.prototype.gameOver = function() {
+    this.info = window.Control.info;
+    let score = window.Control.info.score;
+    window.Control.info = new window.Info({
+      score: score,
+      centerTextShow: true,
+      centerTextFontSize: 32,
+      centerText: '游戏结束，得分' + score + '分，单击以重新开始游戏',
+      show: true
+    });
+    this.init();
   }
   window.Logic = Logic;
 })();
@@ -548,7 +573,7 @@ window.onload = function() {
     this.centerText = function() {
       this.drawSaveRestore(function() {
         this.cxt.fillStyle = '#fff';
-        this.cxt.font = '64px Microsoft YaHei';
+        this.cxt.font = this.info.centerTextFontSize + 'px Microsoft YaHei';
         this.cxt.textAlign = 'center';
         this.cxt.textBaseline = 'middle';
         this.cxt.fillText(this.info.centerText, 400, 300);
