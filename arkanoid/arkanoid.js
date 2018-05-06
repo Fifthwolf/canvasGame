@@ -90,6 +90,10 @@ window.onload = function() {
     if (options.score !== undefined) {
       this.info.addScore(options.score);
     }
+    if (this.brick.health <= 0) {
+      this.run = false;
+      this.logic.gameWin();
+    }
   }
   Ball.prototype.correct = function(options) {
     if (options.left) {
@@ -264,7 +268,7 @@ window.onload = function() {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ],
-    1: [
+    2: [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -274,7 +278,7 @@ window.onload = function() {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 1]
     ],
-    3: [
+    1: [
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -292,10 +296,17 @@ window.onload = function() {
     this.arrange;
   }
   Brick.prototype.init = function(rank) {
+    this.health = 0;
     this.arrange = RangeArrange[rank];
+    for (let i = 0, leni = this.arrange.length; i < leni; i++) {
+      for (let j = 0, lenj = this.arrange[i].length; j < lenj; j++) {
+        this.health += this.arrange[i][j];
+      }
+    }
   }
   Brick.prototype.hurt = function(i, j) {
     this.arrange[i][j]--;
+    this.health--;
   }
   window.Brick = Brick;
 })();
@@ -388,13 +399,14 @@ window.onload = function() {
 (function() {
   function Logic() {
     this.init();
+    this.pass = 1;
 
     this.launch = function() {
       canvas.removeEventListener('click', this.launch);
       this.control.ball.ballRun();
     }.bind(this);
 
-    this.startGame = function() {
+    this.startGame = function(e, pass) {
       canvas.removeEventListener('click', this.startGame);
       // 游戏开始
       this.control.info.InfoData({
@@ -402,7 +414,7 @@ window.onload = function() {
         centerTextShow: false
       });
       this.control.brick = new Brick();
-      this.control.brick.init(1);
+      this.control.brick.init(this.pass);
       this.control.baffle = new Baffle();
       this.control.baffle.init();
       this.control.ball = new Ball();
@@ -414,8 +426,19 @@ window.onload = function() {
     this.control = window.Control;
     canvas.addEventListener('click', this.startGame, false);
   }
+  Logic.prototype.gameWin = function() {
+    let score = window.Control.info.score;
+    this.pass++;
+    window.Control.info = new window.Info({
+      score: score,
+      centerTextShow: true,
+      centerTextFontSize: 48,
+      centerText: '得分' + score + '分，点击进入下一关',
+      show: true
+    });
+    canvas.addEventListener('click', this.startGame, false);
+  }
   Logic.prototype.gameOver = function() {
-    this.info = window.Control.info;
     let score = window.Control.info.score;
     window.Control.info = new window.Info({
       score: score,
