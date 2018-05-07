@@ -2,15 +2,6 @@ window.onload = function() {
   suitScreen(820, 600);
 };
 
-// 游戏
-(function() {
-  function Game() {
-
-  }
-  Game.prototype.init = function() {}
-  window.Game = Game;
-})();
-
 // 球
 (function() {
   const maxVelocity = 3,
@@ -311,6 +302,16 @@ window.onload = function() {
   window.Brick = Brick;
 })();
 
+// 奖励品
+(function() {
+  function Reward() {
+
+  }
+  Baffle.prototype.init = function() {}
+  window.Reward = Reward;
+})();
+
+
 // 挡板
 (function() {
   function Baffle() {
@@ -433,7 +434,7 @@ window.onload = function() {
       score: score,
       centerTextShow: true,
       centerTextFontSize: 48,
-      centerText: '得分' + score + '分，点击进入下一关',
+      centerText: '恭喜成功过关，点击进入第' + this.pass + '关',
       show: true
     });
     canvas.addEventListener('click', this.startGame, false);
