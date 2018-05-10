@@ -349,7 +349,9 @@ window.onload = function() {
       e.preventDefault();
       var left = canvas.getBoundingClientRect().left,
         cursorX = (e.touches[0].pageX - left) / this.system.scale;
+      var previous = this.x;
       this.x = parseInt(cursorX);
+      this.move(previous);
     }.bind(this);
     this.moblieMoveEnd = function(e) {
       e.preventDefault();
@@ -370,7 +372,7 @@ window.onload = function() {
     this.system = window.System;
     this.control = window.Control;
   }
-  Baffle.prototype.move = function() {
+  Baffle.prototype.keyboardMove = function() {
     if (this.direction.left == this.direction.right) {
       return;
     }
@@ -378,12 +380,17 @@ window.onload = function() {
     if (this.direction.left) {
       distance = -distance;
     }
+    var previous = this.x;
     this.x += distance;
-    if (!this.control.ball.run) {
-      this.control.ball.translation(distance);
-    }
-    this.x = Math.max(this.width / 2, Math.min(this.control.canvas.width - this.width / 2, this.x));
+    this.move(previous);
   }
+  Baffle.prototype.move = function(previous) {
+    this.x = Math.max(this.width / 2, Math.min(this.control.canvas.width - this.width / 2, this.x));
+    if (!this.control.ball.run) {
+      this.control.ball.translation(this.x - previous);
+    }
+  }
+
   window.Baffle = Baffle;
 })();
 
@@ -496,7 +503,7 @@ window.onload = function() {
     }
     this.time();
     if (this.baffle) {
-      this.baffle.move();
+      this.baffle.keyboardMove();
     }
     if (this.ball && this.ball.run) {
       this.ball.move();
