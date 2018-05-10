@@ -1,5 +1,5 @@
 window.onload = function() {
-  suitScreen(820, 600);
+  window.System.scale = suitScreen(820, 600);
 };
 
 // 球
@@ -307,10 +307,9 @@ window.onload = function() {
   function Reward() {
 
   }
-  Baffle.prototype.init = function() {}
+  Reward.prototype.init = function() {}
   window.Reward = Reward;
 })();
-
 
 // 挡板
 (function() {
@@ -346,14 +345,29 @@ window.onload = function() {
           break;
       }
     }.bind(this);
+    this.moblieMoveStart = function(e) {
+      e.preventDefault();
+      var left = canvas.getBoundingClientRect().left,
+        cursorX = (e.touches[0].pageX - left) / this.system.scale;
+      this.x = parseInt(cursorX);
+    }.bind(this);
+    this.moblieMoveEnd = function(e) {
+      e.preventDefault();
+    }.bind(this);
   }
   Baffle.prototype.init = function() {
     this.getData();
     document.addEventListener('keydown', this.moveStart, false);
     document.addEventListener('keyup', this.moveEnd, false);
+    if (this.system.mobile) {
+      canvas.addEventListener('touchstart', this.moblieMoveStart, false);
+      canvas.addEventListener('touchmove', this.moblieMoveStart, false);
+      canvas.addEventListener('touchend', this.moblieMoveEnd, false);
+    }
   }
   Baffle.prototype.getData = function() {
     this.data = window.Data;
+    this.system = window.System;
     this.control = window.Control;
   }
   Baffle.prototype.move = function() {
@@ -631,6 +645,7 @@ window.onload = function() {
   var control = {
     init: function() {
       this.initCanvas();
+      system.mobile = /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent) ? true : false;
     },
     initCanvas: function() {
       var image = new Image();

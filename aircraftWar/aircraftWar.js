@@ -28,11 +28,7 @@ var data = {
 }
 
 window.onload = function() {
-  if (/Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent)) {
-    data.system.mobile = true;
-  } else {
-    data.system.mobile = false;
-  }
+  data.system.mobile = /Android|webOS|iPhone|iPod|iPad|BlackBerry/i.test(navigator.userAgent) ? true : false;
   suitScreen(400, 600);
   imageLoaded();
 }
