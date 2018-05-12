@@ -16,18 +16,18 @@ function suitScreen(canvasWidth, canvasHeight) {
   }
   try {
     data.system.scale = scale;
-  }
-  catch(e) {
+  } catch (e) {
     //ignore
   }
-  var top = (WindowHeight - canvasHeight) / scale / 2;
+  var top = (WindowHeight - canvasHeight) / scale / 2,
+    left = (WindowWidth - canvasWidth) / scale / 2;
   try {
     data.system.top = top;
-  }
-  catch(e) {
+  } catch (e) {
     //ignore
   }
   canvas.style.transform = 'scale(' + scale + ', ' + scale + ') translateY(' + top + 'px)';
+  return scale;
 }
 
 function addEvent(element, type, handler) {
