@@ -347,9 +347,9 @@ window.onload = function() {
     }.bind(this);
     this.moblieMoveStart = function(e) {
       e.preventDefault();
-      var left = canvas.getBoundingClientRect().left,
+      let left = canvas.getBoundingClientRect().left,
         cursorX = (e.touches[0].pageX - left) / this.system.scale;
-      var previous = this.x;
+      let previous = this.x;
       this.x = parseInt(cursorX);
       this.move(previous);
     }.bind(this);
@@ -376,11 +376,11 @@ window.onload = function() {
     if (this.direction.left == this.direction.right) {
       return;
     }
-    var distance = this.moveSpeed * this.data.delta;
+    let distance = this.moveSpeed * this.data.delta;
     if (this.direction.left) {
       distance = -distance;
     }
-    var previous = this.x;
+    let previous = this.x;
     this.x += distance;
     this.move(previous);
   }
@@ -443,32 +443,29 @@ window.onload = function() {
       this.control.ball.init();
       canvas.addEventListener('click', this.launch, false);
     }.bind(this);
+
+    this.gameInfo = function(win) {
+      let score = window.Control.info.score;
+      window.Control.info = new window.Info({
+        score: score,
+        centerTextShow: true,
+        centerTextFontSize: win ? 48 : 32,
+        centerText: win ? '恭喜成功过关，点击进入第' + this.pass + '关' : '游戏结束，得分' + score + '分，单击以重新开始游戏',
+        show: true
+      });
+    }
   }
   Logic.prototype.init = function() {
     this.control = window.Control;
     canvas.addEventListener('click', this.startGame, false);
   }
   Logic.prototype.gameWin = function() {
-    let score = window.Control.info.score;
     this.pass++;
-    window.Control.info = new window.Info({
-      score: score,
-      centerTextShow: true,
-      centerTextFontSize: 48,
-      centerText: '恭喜成功过关，点击进入第' + this.pass + '关',
-      show: true
-    });
+    this.gameInfo(true);
     canvas.addEventListener('click', this.startGame, false);
   }
   Logic.prototype.gameOver = function() {
-    let score = window.Control.info.score;
-    window.Control.info = new window.Info({
-      score: score,
-      centerTextShow: true,
-      centerTextFontSize: 32,
-      centerText: '游戏结束，得分' + score + '分，单击以重新开始游戏',
-      show: true
-    });
+    this.gameInfo(false);
     this.init();
   }
   window.Logic = Logic;
