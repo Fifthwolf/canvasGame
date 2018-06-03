@@ -14,6 +14,7 @@ window.onload = function() {
     this.vx;
     this.vy;
     this.run = false;
+    this.gameRun;
   }
   Ball.prototype.init = function(options) {
     this.getData();
@@ -386,7 +387,7 @@ window.onload = function() {
   }
   Baffle.prototype.move = function(previous) {
     this.x = Math.max(this.width / 2, Math.min(this.control.canvas.width - this.width / 2, this.x));
-    if (!this.control.ball.run) {
+    if (!this.control.ball.run && !this.control.logic.gameRun) {
       this.control.ball.translation(this.x - previous);
     }
   }
@@ -402,9 +403,6 @@ window.onload = function() {
     this.centerTextShow = options.centerTextShow || false;
     this.centerText = options.centerText || '';
     this.show = options.show || false;
-  }
-  Info.prototype.init = function() {
-
   }
   Info.prototype.InfoData = function(options) {
     for (var property in options) {
@@ -422,10 +420,12 @@ window.onload = function() {
   function Logic() {
     this.init();
     this.pass = 1;
+    this.gameRun;
 
     this.launch = function() {
       canvas.removeEventListener('click', this.launch);
       this.control.ball.ballRun();
+      this.control.logic.gameRun = true;
     }.bind(this);
 
     this.startGame = function(e, pass) {
@@ -441,6 +441,7 @@ window.onload = function() {
       this.control.baffle.init();
       this.control.ball = new Ball();
       this.control.ball.init();
+      this.control.logic.gameRun = false;
       canvas.addEventListener('click', this.launch, false);
     }.bind(this);
 
@@ -677,7 +678,6 @@ window.onload = function() {
         centerTextShow: true,
         centerText: '点击开始游戏'
       });
-      this.info.init();
     },
   };
 
